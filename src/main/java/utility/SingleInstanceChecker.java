@@ -19,7 +19,7 @@ public class SingleInstanceChecker extends Thread {
 	private static FileChannel fileChannel;
 	private static FileLock lock;
 
-	private static String fname = "../RobotControl/" + ".robotapplock";
+	private static String fname = ".robotapplock";
 
 	private static int ID;
 	private static boolean last = true;
