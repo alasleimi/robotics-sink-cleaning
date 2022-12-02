@@ -1,0 +1,10 @@
+.idea
+*.iml
+.gradle
+gradlew
+gradlew.bat
+out
+build
+gradle
+cmake-build-debug
+cmake-build-release

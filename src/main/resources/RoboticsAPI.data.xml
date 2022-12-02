@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<RoboticsAPIData version="3">
+    <world>
+        <gravitation x="0.0" y="0.0" z="9.81"/>
+        <frame name="RPCHI_ROBOT">
+            <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+            <additionalInformation>
+                <info key="LastModificationTime" type="java.lang.Long" value="1431421028175"/>
+            </additionalInformation>
+            <redundancyData>
+                <redundancy transformationProviderName="legacy" type="com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy"/>
+            </redundancyData>
+        </frame>
+    </world>
+    <objectTemplates>
+        <toolTemplate class="" name="NO_TOOL">
+            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="18.91017998164249" cogY="18.532924652777595" cogZ="52.03466487262058" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.13"/>
+        </toolTemplate>
+        <toolTemplate class="" name="EXERCISE_TOOL">
+            <frames>
+                <frame name="TCP">
+                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="202.0"/>
+                </frame>
+                <frame name="Kollisionskugel">
+                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="142.0"/>
+                    <additionalInformation>
+                        <info key="Radius" type="java.lang.Integer" value="65"/>
+                        <info key="SafetyID" type="java.lang.Integer" value="0"/>
+                    </additionalInformation>
+                </frame>
+                <frame name="BASE">
+                    <transformation a="0.0" b="0.0" c="0.0" x="0.0" y="0.0" z="0.0"/>
+                </frame>
+            </frames>
+            <additionalInformation>
+                <info key="SafetyID" type="java.lang.Integer" value="0"/>
+            </additionalInformation>
+            <loadData cogA="0.0" cogB="0.0" cogC="0.0" cogX="8.805069659206941" cogY="5.925607126714437" cogZ="33.864817334035294" inertiaX="0.0" inertiaY="0.0" inertiaZ="0.0" mass="0.8465700122337448"/>
+        </toolTemplate>
+    </objectTemplates>
+</RoboticsAPIData>
