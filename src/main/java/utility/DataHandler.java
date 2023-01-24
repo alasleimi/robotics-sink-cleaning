@@ -8,10 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import robot.SunriseConnector;
 
@@ -41,7 +39,7 @@ public class DataHandler {
 		File fileObject = new File(dirPath);
 		fileObject.mkdirs();
 
-		ArrayList<String> names = new ArrayList<String>(Arrays.asList(fileObject.list()));
+		ArrayList<String> names = new ArrayList<String>(Arrays.asList(Objects.requireNonNull(fileObject.list())));
 
 		int number = 0;
 		for (int i = names.size() - 1; i >= 0; i--) {
@@ -50,7 +48,7 @@ public class DataHandler {
 				if (n > number)
 					number = n;
 			} catch (Exception e) {
-				continue;
+				throw new RuntimeException(e);
 			}
 		}
 		return ("F" + number);
@@ -58,7 +56,7 @@ public class DataHandler {
 
 	/**
 	 * Saves a frame in the frames folder of the configured data path.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the file [without ending]
 	 * @param frame
@@ -72,10 +70,8 @@ public class DataHandler {
 
 		System.out.println("Writing to file '" + filePath + "/" + name + ".frm" + "'");
 
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".frm"),
-					"utf-8"));
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".frm"),
+				StandardCharsets.UTF_8))) {
 			writer.write(String.format(Locale.US, "%.3f", frame.getX()));
 			writer.write(String.format(Locale.US, " %.3f", frame.getY()));
 			writer.write(String.format(Locale.US, " %.3f", frame.getZ()));
@@ -91,37 +87,28 @@ public class DataHandler {
 			// System.out.println(red.toString());
 
 			for (@SuppressWarnings("rawtypes")
-			IParameter p : red) {
+					IParameter p : red) {
 				writer.write(p.value() + " ");
 			}
-
 		} catch (IOException e) {
-			// report
-		} finally {
-			try {
-				writer.close();
-			} catch (Exception e) {
-			}
+			throw new RuntimeException(e);
 		}
 	}
 
 	/**
 	 * Saves the current tcp frame in the frames folder of the configured data path. Filename is 'F' with an
 	 * automatically increasing number according to the frame files already existing in the frames folder.
-	 * 
-	 * @return Name of the saved frame [without ending]
+	 *
 	 */
-	public static String saveFrame() {
+	public static void saveFrame() {
 		String name = SunriseConnector.getControlGui().getFrameName();
 		saveFrame(name, SunriseConnector.getTcpFrame());
 		SunriseConnector.getControlGui().setNextFrameName(getNextFrameName());
-
-		return name;
 	}
 
 	/**
 	 * Loads a frame from the frames folder of the configured data path.
-	 * 
+	 *
 	 * @param filename
 	 *            name of the frame to be loaded
 	 * @return Frame object. Returns null, if the corresponding file does not exist
@@ -132,9 +119,7 @@ public class DataHandler {
 		System.out.println("Reading from file '" + filePath + "'");
 		Frame result = null;
 
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"));
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"))) {
 
 			String[] valuesString = reader.readLine().split(" ");
 			double[] valuesDouble = new double[valuesString.length];
@@ -163,11 +148,6 @@ public class DataHandler {
 
 		} catch (IOException e) {
 			System.err.println("could not read data from " + filePath + "/" + filename);
-		} finally {
-			try {
-				reader.close();
-			} catch (Exception e) {
-			}
 		}
 
 		return result;
@@ -179,7 +159,7 @@ public class DataHandler {
 		File fileObject = new File(dirPath);
 		fileObject.mkdirs();
 
-		ArrayList<String> names = new ArrayList<String>(Arrays.asList(fileObject.list()));
+		ArrayList<String> names = new ArrayList<String>(Arrays.asList(Objects.requireNonNull(fileObject.list())));
 
 		int number = 0;
 		for (int i = names.size() - 1; i >= 0; i--) {
@@ -196,7 +176,7 @@ public class DataHandler {
 
 	/**
 	 * Saves a joint position in the joints folder of the configured data path.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the file [without ending]
 	 * @param jointPos
@@ -210,10 +190,8 @@ public class DataHandler {
 
 		System.out.println("Writing to file '" + filePath + "/" + name + ".jnt" + "'");
 
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".jnt"),
-					"utf-8"));
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".jnt"),
+				StandardCharsets.UTF_8))) {
 			// write joint position
 			writer.write(String.format(Locale.US, "%.3f", jointPos.get(0)));
 			for (int i = 1; i < 7; i++) {
@@ -222,31 +200,23 @@ public class DataHandler {
 
 		} catch (IOException e) {
 			// report
-		} finally {
-			try {
-				writer.close();
-			} catch (Exception e) {
-			}
 		}
 	}
 
 	/**
 	 * Saves the current joint position in the joints folder of the configured data path. Filename is 'J' with an
 	 * automatically increasing number according to the joint position files already existing in the joints folder.
-	 * 
-	 * @return Name of the saved joint position [without ending]
+	 *
 	 */
-	public static String saveJointPosition() {
+	public static void saveJointPosition() {
 		String name = SunriseConnector.getControlGui().getJointPosName();
 		saveJointPosition(name, SunriseConnector.getRobot().getCurrentJointPosition());
 		SunriseConnector.getControlGui().setNextJointPosName(getNextJointPosName());
-
-		return name;
 	}
 
 	/**
 	 * Loads a joint position from the joints folder of the configured data path.
-	 * 
+	 *
 	 * @param filename
 	 *            name of the joint to be loaded
 	 * @return JointPosition object. Returns null, if the corresponding file does not exist
@@ -257,9 +227,7 @@ public class DataHandler {
 		System.out.println("Reading from file '" + filePath + "'");
 		JointPosition result = null;
 
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"));
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"))) {
 
 			String line = reader.readLine();
 			line.replaceAll("  ", " ");
@@ -276,11 +244,6 @@ public class DataHandler {
 
 		} catch (IOException e) {
 			System.err.println("could not read data from " + filePath + "/" + filename);
-		} finally {
-			try {
-				reader.close();
-			} catch (Exception e) {
-			}
 		}
 
 		return result;

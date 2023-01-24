@@ -66,14 +66,10 @@ public class SunriseConnector {
         controlGui = new ControlGUI();
     }
 
-    public static void initializeAndRun(RoboticsAPIApplication app) {
+    public static void initializeAndRun(RoboticsAPIApplication app) throws Exception {
         initialize(app);
         app.initialize();
-        try {
-            app.run();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        app.run();
     }
 
     /**
@@ -212,7 +208,7 @@ public class SunriseConnector {
         JointPosition targetPosition = SunriseConnector.getRobot().getCurrentJointPosition();
 
 
-        /** --- parameter settings --- */
+        /* --- parameter settings --- */
         double stiffness = 0;
         double damping = 0.7;
         /** -------------------------- */

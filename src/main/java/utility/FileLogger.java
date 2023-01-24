@@ -6,10 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 import com.kuka.roboticsAPI.deviceModel.LBR;
 import com.kuka.roboticsAPI.geometricModel.Frame;
@@ -105,16 +102,12 @@ public class FileLogger extends Thread {
 	 * Create a file logger all possible fields. If not set by setFilename(), the file name will be the time when
 	 * starting logging.
 	 * 
-	 * @param intervall
-	 *            time between log entries in ms.
 	 */
 	// public FileLogger(int intervall) {
 	public FileLogger() {
 		// this.intervall = intervall;
 		System.out.println("logging all fields:");
-		for (Fields f : Fields.values()) {
-			fieldsToWrite.add(f);
-		}
+		Collections.addAll(fieldsToWrite, Fields.values());
 	}
 
 	private static FileLogger logger = null;
@@ -122,7 +115,6 @@ public class FileLogger extends Thread {
 	public static void startLogging(String filename, Fields... fields) {
 		logger = new FileLogger(fields);
 		logger.setFilename(filename);
-
 		logger.activate();
 	}
 
@@ -180,10 +172,7 @@ public class FileLogger extends Thread {
 	public void run() {
 		System.out.println("Starting to log to file '" + filename + "' now");
 
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, false), "utf-8"));
-
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, false), "utf-8"))) {
 			Frame tcpFrame = null;
 			Frame tcpFrameLast = null;
 			double[] jointPos = null;
@@ -202,84 +191,84 @@ public class FileLogger extends Thread {
 
 			for (Fields f : fieldsToWrite) {
 				switch (f) {
-				case TIME:
-					writer.write("TIME");
-					writer.write(separator);
-					break;
+					case TIME:
+						writer.write("TIME");
+						writer.write(separator);
+						break;
 
-				case JOINT_POSITION:
-					if (fieldsToWrite.contains(Fields.JOINT_POSITION)) {
-						for (int i = 0; i < 7; i++) {
-							writer.write("J" + i);
+					case JOINT_POSITION:
+						if (fieldsToWrite.contains(Fields.JOINT_POSITION)) {
+							for (int i = 0; i < 7; i++) {
+								writer.write("J" + i);
+								writer.write(separator);
+							}
+						}
+						break;
+
+					case TRANSLATION:
+						if (fieldsToWrite.contains(Fields.TRANSLATION)) {
+							writer.write("X" + separator);
+							writer.write("Y" + separator);
+							writer.write("Z" + separator);
+						}
+						break;
+					case ORIENTATION:
+						if (fieldsToWrite.contains(Fields.ORIENTATION)) {
+							writer.write("A" + separator);
+							writer.write("B" + separator);
+							writer.write("C" + separator);
+						}
+						break;
+
+					case JOINT_SPACE_DISTANCE:
+						if (fieldsToWrite.contains(Fields.JOINT_SPACE_DISTANCE)) {
+							writer.write("JS_DIST");
 							writer.write(separator);
 						}
-					}
-					break;
+						break;
 
-				case TRANSLATION:
-					if (fieldsToWrite.contains(Fields.TRANSLATION)) {
-						writer.write("X" + separator);
-						writer.write("Y" + separator);
-						writer.write("Z" + separator);
-					}
-					break;
-				case ORIENTATION:
-					if (fieldsToWrite.contains(Fields.ORIENTATION)) {
-						writer.write("A" + separator);
-						writer.write("B" + separator);
-						writer.write("C" + separator);
-					}
-					break;
-
-				case JOINT_SPACE_DISTANCE:
-					if (fieldsToWrite.contains(Fields.JOINT_SPACE_DISTANCE)) {
-						writer.write("JS_DIST");
-						writer.write(separator);
-					}
-					break;
-
-				case TRANSLATIONAL_DISTANCE:
-					if (fieldsToWrite.contains(Fields.TRANSLATIONAL_DISTANCE)) {
-						writer.write("TRANS_DIST");
-						writer.write(separator);
-					}
-					break;
-
-				case ROTATIONAL_DISTANCE:
-					if (fieldsToWrite.contains(Fields.ROTATIONAL_DISTANCE)) {
-						writer.write("ROT_DIST");
-						writer.write(separator);
-					}
-					break;
-
-				case MEASURED_TORQUES:
-					if (fieldsToWrite.contains(Fields.MEASURED_TORQUES)) {
-						for (int i = 0; i < 7; i++) {
-							writer.write("MT" + i);
+					case TRANSLATIONAL_DISTANCE:
+						if (fieldsToWrite.contains(Fields.TRANSLATIONAL_DISTANCE)) {
+							writer.write("TRANS_DIST");
 							writer.write(separator);
 						}
-					}
-					break;
+						break;
 
-				case EXTERNAL_TORQUES:
-					if (fieldsToWrite.contains(Fields.EXTERNAL_TORQUES)) {
-						for (int i = 0; i < 7; i++) {
-							writer.write("ET" + i);
+					case ROTATIONAL_DISTANCE:
+						if (fieldsToWrite.contains(Fields.ROTATIONAL_DISTANCE)) {
+							writer.write("ROT_DIST");
 							writer.write(separator);
 						}
-					}
-					break;
+						break;
 
-				case EXTERNAL_TCP_FORCES_TORQUES:
-					if (fieldsToWrite.contains(Fields.EXTERNAL_TCP_FORCES_TORQUES)) {
-						writer.write("FX" + separator);
-						writer.write("FY" + separator);
-						writer.write("FZ" + separator);
-						writer.write("TA" + separator);
-						writer.write("TB" + separator);
-						writer.write("TC" + separator);
-					}
-					break;
+					case MEASURED_TORQUES:
+						if (fieldsToWrite.contains(Fields.MEASURED_TORQUES)) {
+							for (int i = 0; i < 7; i++) {
+								writer.write("MT" + i);
+								writer.write(separator);
+							}
+						}
+						break;
+
+					case EXTERNAL_TORQUES:
+						if (fieldsToWrite.contains(Fields.EXTERNAL_TORQUES)) {
+							for (int i = 0; i < 7; i++) {
+								writer.write("ET" + i);
+								writer.write(separator);
+							}
+						}
+						break;
+
+					case EXTERNAL_TCP_FORCES_TORQUES:
+						if (fieldsToWrite.contains(Fields.EXTERNAL_TCP_FORCES_TORQUES)) {
+							writer.write("FX" + separator);
+							writer.write("FY" + separator);
+							writer.write("FZ" + separator);
+							writer.write("TA" + separator);
+							writer.write("TB" + separator);
+							writer.write("TC" + separator);
+						}
+						break;
 				}
 			}
 
@@ -300,100 +289,100 @@ public class FileLogger extends Thread {
 
 				for (Fields f : fieldsToWrite) {
 					switch (f) {
-					case TIME:
-						if (fieldsToWrite.contains(Fields.TIME)) {
-							writer.write("" + (now - start));
-							writer.write(separator);
-						}
-						break;
-
-					case JOINT_POSITION:
-						if (fieldsToWrite.contains(Fields.JOINT_POSITION)) {
-							for (int i = 0; i < 7; i++) {
-								writer.write(String.format(Locale.US, "%.3f", jointPos[i]) + separator);
+						case TIME:
+							if (fieldsToWrite.contains(Fields.TIME)) {
+								writer.write("" + (now - start));
+								writer.write(separator);
 							}
-						}
-						break;
+							break;
 
-					case TRANSLATION:
-						if (fieldsToWrite.contains(Fields.TRANSLATION)) {
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getX()) + separator);
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getY()) + separator);
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getZ()) + separator);
-						}
-						break;
-					case ORIENTATION:
-						if (fieldsToWrite.contains(Fields.ORIENTATION)) {
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getAlphaRad()) + separator);
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getBetaRad()) + separator);
-							writer.write(String.format(Locale.US, "%.3f", tcpFrame.getGammaRad()) + separator);
-						}
-						break;
-
-					case JOINT_SPACE_DISTANCE:
-						if (fieldsToWrite.contains(Fields.JOINT_SPACE_DISTANCE)) {
-							double dist = 0;
-							if (jointPosLast != null) {
-								for (int i = 0; i < jointPos.length; i++) {
-									dist += Math.pow(jointPosLast[i] - jointPos[i], 2);
+						case JOINT_POSITION:
+							if (fieldsToWrite.contains(Fields.JOINT_POSITION)) {
+								for (int i = 0; i < 7; i++) {
+									writer.write(String.format(Locale.US, "%.3f", jointPos[i]) + separator);
 								}
 							}
-							writer.write(String.format(Locale.US, "%.5f", Math.sqrt(dist)) + separator);
-						}
-						break;
+							break;
 
-					case TRANSLATIONAL_DISTANCE:
-						if (fieldsToWrite.contains(Fields.TRANSLATIONAL_DISTANCE)) {
-							double dist = 0;
-							if (tcpFrameLast != null) {
-								dist = tcpFrameLast.distanceTo(tcpFrame);
+						case TRANSLATION:
+							if (fieldsToWrite.contains(Fields.TRANSLATION)) {
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getX()) + separator);
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getY()) + separator);
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getZ()) + separator);
 							}
-							writer.write(String.format(Locale.US, "%.5f", dist) + separator);
-						}
-						break;
+							break;
+						case ORIENTATION:
+							if (fieldsToWrite.contains(Fields.ORIENTATION)) {
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getAlphaRad()) + separator);
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getBetaRad()) + separator);
+								writer.write(String.format(Locale.US, "%.3f", tcpFrame.getGammaRad()) + separator);
+							}
+							break;
 
-					case ROTATIONAL_DISTANCE:
-						if (fieldsToWrite.contains(Fields.ROTATIONAL_DISTANCE)) {
-							double dist = 0;
-							if (tcpFrameLast != null) {
-								dist = tcpFrameLast.rotationalDistanceTo(tcpFrame);
+						case JOINT_SPACE_DISTANCE:
+							if (fieldsToWrite.contains(Fields.JOINT_SPACE_DISTANCE)) {
+								double dist = 0;
+								if (jointPosLast != null) {
+									for (int i = 0; i < jointPos.length; i++) {
+										dist += Math.pow(jointPosLast[i] - jointPos[i], 2);
+									}
+								}
+								writer.write(String.format(Locale.US, "%.5f", Math.sqrt(dist)) + separator);
 							}
-							writer.write(String.format(Locale.US, "%.5f", dist) + separator);
-						}
-						break;
+							break;
 
-					case MEASURED_TORQUES:
-						if (fieldsToWrite.contains(Fields.MEASURED_TORQUES)) {
-							tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
-							for (int i = 0; i < 7; i++) {
-								writer.write(
-										String.format(Locale.US, "%.3f", tsd_int.getTorqueValues()[i]) + separator);
+						case TRANSLATIONAL_DISTANCE:
+							if (fieldsToWrite.contains(Fields.TRANSLATIONAL_DISTANCE)) {
+								double dist = 0;
+								if (tcpFrameLast != null) {
+									dist = tcpFrameLast.distanceTo(tcpFrame);
+								}
+								writer.write(String.format(Locale.US, "%.5f", dist) + separator);
 							}
-						}
-						break;
+							break;
 
-					case EXTERNAL_TORQUES:
-						if (fieldsToWrite.contains(Fields.EXTERNAL_TORQUES)) {
-							tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
-							for (int i = 0; i < 7; i++) {
-								writer.write(
-										String.format(Locale.US, "%.3f", tsd_ext.getTorqueValues()[i]) + separator);
+						case ROTATIONAL_DISTANCE:
+							if (fieldsToWrite.contains(Fields.ROTATIONAL_DISTANCE)) {
+								double dist = 0;
+								if (tcpFrameLast != null) {
+									dist = tcpFrameLast.rotationalDistanceTo(tcpFrame);
+								}
+								writer.write(String.format(Locale.US, "%.5f", dist) + separator);
 							}
-						}
-						break;
+							break;
 
-					case EXTERNAL_TCP_FORCES_TORQUES:
-						if (fieldsToWrite.contains(Fields.EXTERNAL_TCP_FORCES_TORQUES)) {
-							tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
-							for (int i = 0; i < 3; i++) {
-								writer.write(String.format(Locale.US, "%.3f", fsd.getForce().get(i)) + separator);
+						case MEASURED_TORQUES:
+							if (fieldsToWrite.contains(Fields.MEASURED_TORQUES)) {
+								tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
+								for (int i = 0; i < 7; i++) {
+									writer.write(
+											String.format(Locale.US, "%.3f", tsd_int.getTorqueValues()[i]) + separator);
+								}
 							}
+							break;
 
-							for (int i = 0; i < 3; i++) {
-								writer.write(String.format(Locale.US, "%.3f", fsd.getTorque().get(i)) + separator);
+						case EXTERNAL_TORQUES:
+							if (fieldsToWrite.contains(Fields.EXTERNAL_TORQUES)) {
+								tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
+								for (int i = 0; i < 7; i++) {
+									writer.write(
+											String.format(Locale.US, "%.3f", tsd_ext.getTorqueValues()[i]) + separator);
+								}
 							}
-						}
-						break;
+							break;
+
+						case EXTERNAL_TCP_FORCES_TORQUES:
+							if (fieldsToWrite.contains(Fields.EXTERNAL_TCP_FORCES_TORQUES)) {
+								tsd_int = SunriseConnector.getRobot().getMeasuredTorque();
+								for (int i = 0; i < 3; i++) {
+									writer.write(String.format(Locale.US, "%.3f", fsd.getForce().get(i)) + separator);
+								}
+
+								for (int i = 0; i < 3; i++) {
+									writer.write(String.format(Locale.US, "%.3f", fsd.getTorque().get(i)) + separator);
+								}
+							}
+							break;
 					}
 				}
 
@@ -406,11 +395,6 @@ public class FileLogger extends Thread {
 
 		} catch (IOException e) {
 			// report
-		} finally {
-			try {
-				writer.close();
-			} catch (Exception e) {
-			}
 		}
 	}
 }
