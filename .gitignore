@@ -9,3 +9,4 @@ gradle
 cmake-build-debug
 cmake-build-release
 .robotapplock
+bin

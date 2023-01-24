@@ -103,8 +103,7 @@ public class SunriseConnector {
      */
     public static SunriseConnector getInstance() {
         if (instance == null) {
-            System.err.println("RobotController not initialized! call RobotController.initialize(...) in your main!");
-            System.exit(1);
+            throw new UnsupportedOperationException("RobotController not initialized! call RobotController.initialize(...) in your main!");
         }
         return instance;
     }
