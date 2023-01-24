@@ -9,10 +9,6 @@ import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import com.kuka.common.ThreadUtil;
-import com.kuka.connectivity.fastRobotInterface.ClientCommandMode;
-//import com.kuka.connectivity.fastRobotInterface.FRIConfiguration;
-import com.kuka.connectivity.fastRobotInterface.FRIJointOverlay;
-//import com.kuka.connectivity.fastRobotInterface.FRISession;
 import com.kuka.roboticsAPI.applicationModel.IApplicationData;
 import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 import com.kuka.roboticsAPI.conditionModel.ICondition;
@@ -248,75 +244,6 @@ public class SunriseConnector {
         }
     }
 
-
-    public void advancedGravcomp() {
-        FriSessionConnector.getSession().ifPresent(fri -> {
-
-            JointPosition jp = robot.getCurrentJointPosition();
-            robot.move(ptp(jp));
-
-            jp = robot.getCurrentJointPosition();
-            robot.move(ptp(jp)); // Switches back to position controller
-
-            JointImpedanceControlMode freeFloatingRobotJicm = new JointImpedanceControlMode(7);
-            freeFloatingRobotJicm.setStiffnessForAllJoints(0);
-            freeFloatingRobotJicm.setDampingForAllJoints(0.7);
-
-            int timeout = 100000;
-            IMotionContainer imc;
-            FRIJointOverlay torqueOverlay = new FRIJointOverlay(fri, ClientCommandMode.TORQUE);
-            try {
-                imc = robot.moveAsync(
-                        BasicMotions.positionHold(freeFloatingRobotJicm, -1, TimeUnit.MILLISECONDS)
-                                .addMotionOverlay(torqueOverlay)
-                );
-                ThreadUtil.milliSleep(timeout);
-                imc.cancel();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public void advancedGravcompLoop() {
-        FriSessionConnector.getSession().ifPresent(fri -> {
-
-            JointPosition jp = robot.getCurrentJointPosition();
-            robot.move(ptp(jp));
-
-            jp = robot.getCurrentJointPosition();
-            robot.move(ptp(jp)); // Switches back to position controller
-
-            JointImpedanceControlMode freeFloatingRobotJicm = new JointImpedanceControlMode(7);
-            freeFloatingRobotJicm.setStiffnessForAllJoints(0);
-            freeFloatingRobotJicm.setDampingForAllJoints(0.7);
-            FRIJointOverlay torqueOverlay = new FRIJointOverlay(fri, ClientCommandMode.TORQUE);
-
-
-            JointPosition targetPosition = SunriseConnector.getRobot().getCurrentJointPosition();
-            IMotionContainer activeMove = SunriseConnector.getRobot().moveAsync(
-                    ptp(targetPosition).setMode(freeFloatingRobotJicm).addMotionOverlay(torqueOverlay));
-            IMotionContainer nextMove = null;
-
-            while (true) {
-                nextMove = SunriseConnector.getRobot().moveAsync(
-                        positionHold(freeFloatingRobotJicm, -1, TimeUnit.MILLISECONDS)
-                                .setMode(freeFloatingRobotJicm)
-                                .addMotionOverlay(torqueOverlay));
-                activeMove.await();
-                if (activeMove.hasError()) {
-                    System.out.println("### velocity limit exceeded, pausing for 1 second");
-                    nextMove.cancel();
-                    ThreadUtil.milliSleep(1000);
-                    nextMove = SunriseConnector.getRobot().moveAsync(
-                            positionHold(freeFloatingRobotJicm, -1, TimeUnit.MILLISECONDS)
-                                    .setMode(freeFloatingRobotJicm)
-                                    .addMotionOverlay(torqueOverlay));
-                }
-                activeMove = nextMove;
-            }
-        });
-    }
 
     /**
      * Create a condition to detect collisions based on joint torques.
