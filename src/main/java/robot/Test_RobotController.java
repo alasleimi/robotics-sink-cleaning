@@ -4,7 +4,7 @@ import com.kuka.roboticsAPI.applicationModel.RoboticsAPIApplication;
 
 public class Test_RobotController extends RoboticsAPIApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		Test_RobotController app = new Test_RobotController();
 		SunriseConnector.initializeAndRun(app);
 	}
