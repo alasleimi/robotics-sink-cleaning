@@ -285,7 +285,7 @@ public class FileLogger extends Thread {
 				if (fieldsToWrite.contains(Fields.EXTERNAL_TORQUES))
 					tsd_ext = SunriseConnector.getRobot().getExternalTorque();
 				if (fieldsToWrite.contains(Fields.EXTERNAL_TCP_FORCES_TORQUES))
-					fsd = SunriseConnector.getRobot().getExternalForceTorque(null);
+					fsd = SunriseConnector.getRobot().getExternalForceTorque(SunriseConnector.getTool().getDefaultMotionFrame());
 
 				for (Fields f : fieldsToWrite) {
 					switch (f) {
