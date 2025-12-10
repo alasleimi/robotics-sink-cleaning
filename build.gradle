@@ -3,10 +3,6 @@ plugins {
     id 'application'
 }
 
-application {
-    mainClassName = "exercises.Task_08_Wireloop"
-}
-
 group 'iiwa-exercises'
 version '1.0-SNAPSHOT'
 
