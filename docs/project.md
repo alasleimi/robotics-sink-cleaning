@@ -9,7 +9,7 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Task | State | Next action |
 | --- | --- | --- |
 | Shared repository and repeatable setup | Implemented; validation recorded below | Canel clones after being invited |
-| Sunrise simulation adapter | Robosuite port implemented; full Windows/Intel Mac/Apple Silicon CI passed | Use the simulation guide; exact KUKA E1 remains unsupported |
+| Sunrise simulation adapter | E1, taught redundancy, force-frame/threshold fixes and optional wire fixture implemented | Validate current revision; see `docs/validation.md` |
 | Robot/API exercises | Original mains tested in simulation; student TODOs preserved | Teach F0-F2/J0-J2 in 01, then run 02; hardware execution remains untested |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
 | Demonstration recording | Simulator teaching saves and FileLogger tested | Agree on lab recording fields and setup |

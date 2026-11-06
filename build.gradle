@@ -52,7 +52,7 @@ tasks.register('simRun', JavaExec) {
     mainClass = 'simproxy.Launcher'
     args providers.gradleProperty('exercise').getOrElse('03')
     systemProperty 'java.awt.headless', providers.gradleProperty('headless').getOrElse('false')
-    systemProperty 'robot.dataDir', providers.gradleProperty('dataDir').getOrElse('data/simulation/robosuite')
+    systemProperty 'robot.dataDir', providers.gradleProperty('dataDir').getOrElse('data/simulation/robosuite-sunrise')
 }
 tasks.register('simClasspath') {
     dependsOn simulatorClasses

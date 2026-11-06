@@ -98,6 +98,7 @@ def main():
         q0 = [float(v) for v in (data / "joint_positions/J0.jnt").read_text().split()]
         assert max(abs(a-b) for a, b in zip(q0, s.call("state")["q"])) < .015
         complete("simproxy.ContractCheck", label="motion-force-logging-contracts")
+        complete("simproxy.ExerciseRequirementsCheck", label="elbow-batches-force-contracts", timeout=180)
         for number in ("03", "04"):
             complete("simproxy.Launcher", number, label=f"exercise-{number}-scaffold")
         for number in ("05a", "05b", "06"):
@@ -126,6 +127,26 @@ def main():
         complete("simproxy.ContractCheck", "wire", label="teach-wire-start")
         complete("simproxy.Launcher", "08", label="exercise-08-startup-scaffold")
         path = s.folder / "report.json"
+        path.write_text(json.dumps(report, indent=2))
+        print(f"Core exercise checks passed. Report: {path}", flush=True)
+
+    # Exercise 8 also needs a physical obstacle. Use an independent generic
+    # practice fixture; never silently add objects to the other exercise scenes.
+    with Session(headless=True, fast=True, build=False, scene="wire") as wire:
+        data = wire.folder / "teaching"
+        for main, args, label in [
+            ("simproxy.ContractCheck", ["wire"], "teach-wire-start"),
+            ("simproxy.Launcher", ["08"], "exercise-08-wire-approach"),
+            ("simproxy.ExerciseRequirementsCheck", ["wire-contact"], "wire-contact-force-break"),
+        ]:
+            process = wire.java(main, *args, data=data, label=label)
+            result = process.wait(timeout=120)
+            if result:
+                raise AssertionError((wire.folder / f"{label}.log").read_text())
+            print(f"PASS {label}", flush=True)
+        (wire.folder / "report.json").write_text(json.dumps({"checks": ["original Exercise 8 approach in wire scene", "ring/wire collision and Java force break"]}, indent=2))
+        report["checks"].extend(["original Exercise 8 approach in wire scene", "ring/wire collision and Java force break"])
+        report["wire_logs"] = str(wire.folder)
         path.write_text(json.dumps(report, indent=2))
         print(f"All simulation checks passed. Report: {path}", flush=True)
 

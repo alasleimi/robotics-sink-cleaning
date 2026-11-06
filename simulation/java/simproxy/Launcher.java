@@ -20,7 +20,7 @@ public final class Launcher {
     if (name == null)
       throw new IllegalArgumentException(
           "Exercise must be 01, 02, 03, 04, 05a, 05b, 06, 07, or 08");
-    System.setProperty("robot.dataDir", System.getProperty("robot.dataDir", "data/simulation/robosuite"));
+    System.setProperty("robot.dataDir", System.getProperty("robot.dataDir", "data/simulation/robosuite-sunrise"));
     try {
       if (selected.equals("02"))
         for (int i = 0; i < 3; i++) {

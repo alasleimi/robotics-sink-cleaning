@@ -96,6 +96,35 @@ public class DataHandlerTest {
   }
 
   @Test
+  public void e1OnlyAndStatusOnlyRoundTrip() {
+    for (boolean e1Only : new boolean[] {true, false}) {
+      Frame frame = new Frame(400, 0, 350);
+      LBRE1Redundancy red = new LBRE1Redundancy();
+      if (e1Only) red.setE1(.3); else red.setStatus(2);
+      frame.setRedundancyInformation("LBR_iiwa_7_R800_1", red);
+      DataHandler.saveFrame("partial", frame);
+      LBRE1Redundancy copy = (LBRE1Redundancy) DataHandler.loadFrame("partial")
+          .getRedundancyInformation().get("LBR_iiwa_7_R800_1");
+      if (e1Only) assertEquals(.3, copy.getE1(), 1e-12); else assertEquals(2, copy.getStatus());
+      try { copy.getTurn(); fail("Unset Turn must stay unset"); }
+      catch (IllegalStateException expected) { }
+    }
+  }
+
+  @Test
+  public void readsPreviousFullRedundancyFormat() throws Exception {
+    Files.createDirectories(folder.resolve("frames"));
+    String key = java.util.Base64.getUrlEncoder().encodeToString("LBR_iiwa_7_R800_1".getBytes(StandardCharsets.UTF_8));
+    Files.write(folder.resolve("frames/old.frm"),
+        ("400 0 350 0 0 0\n# LBRE1-v1 " + key + " 0.43 2 17\n").getBytes(StandardCharsets.UTF_8));
+    LBRE1Redundancy red = (LBRE1Redundancy) DataHandler.loadFrame("old")
+        .getRedundancyInformation().get("LBR_iiwa_7_R800_1");
+    assertEquals(.43, red.getE1(), 1e-12);
+    assertEquals(2, red.getStatus());
+    assertEquals(17, red.getTurn());
+  }
+
+  @Test
   public void legacyWhitespaceAndDegrees() throws Exception {
     Files.createDirectories(folder.resolve("frames"));
     Files.write(

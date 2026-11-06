@@ -1,11 +1,21 @@
 # Validation history
 
-## Robosuite port — 6 November 2026
+## E1 and exercise requirements â€” 6 November 2026
 
-Robosuite 1.5.2, MuJoCo 3.3.7 and NumPy 1.26.4 are installed through the locked uv environment. Setup/SDK checks and Java teaching-file checks passed on Windows. Fifteen Python checks cover setup/PGLfD plus actual model Jacobians, saved-pose IK, joint-limit sweeps, compliant force response, Cartesian stiffness, teaching target mapping and the robosuite reset/step interface. The native Windows viewer opened and closed successfully; its rendered scene was visually inspected. The full original exercise sequence and Java motion/force/logging assertions passed locally (`.tools/sim-jppzq3ok/report.json`), including Exercise 1 saving F0–F2/J0–J2, Exercise 2 replay, Exercise 6 force break and Exercise 7 singular postures. Exercises 3/4 remain student scaffolds and 8 covers its supplied approach. Full headless CI passed on Windows x64, Intel Mac and Apple Silicon Mac: [run 42198672432](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42198672432), tested revision `53a0590`. This includes setup, fifteen Python checks, seven Java teaching-file tests and the complete exercise integration run. The Mac desktop viewer was not manually tested. Hardware has not been connected.
+Implemented E1-constrained IK/PTP/LIN, Status handling, partial redundancy persistence, and measured/FK frame metadata. The model's flange now matches Arne's independent kinematics (zero, front, and 30 varied joint configurations). New teaching files use `data/simulation/robosuite-sunrise`; earlier recordings remain untouched.
+
+Local Windows integration passed (`.tools/sim-6h8qba48/report.json`): Exercise 1 â†’ 2 teaching/replay; explicit E1 changes at fixed TCP; taught elbow restoration; FK/IK; invalid E1 rejection; all three Exercise 4 batch types and distance logs; force coordinate conversion and a 10 N threshold firing at 12 N; and all original exercise mains/bounded loops. A separate generic wire scene passed the original Exercise 8 approach and an actual ring/wire contact triggering a Java force break. The scene was rendered and visually inspected. Student TODOs and hardware configuration are unchanged.
+
+Python regressions cover joint-3 constraints, Status branches, continuous LIN, partial metadata defaults, independent flange kinematics, and upper-arm pushes producing external joint torque. Java tests cover full, partial and previous-format teaching metadata. Cross-platform CI for the final revision is pending.
+
+These checks validate the simulated exercise API. Complete Sunrise planning/singularity behaviour, calibrated dynamics and lab wire dimensions remain unverified. The course README mentions `practical.pdf`, but that handout is absent from the supplied checkout; the coverage audit uses the exercise source and its comments.
+
+## Robosuite port â€” 6 November 2026
+
+Robosuite 1.5.2, MuJoCo 3.3.7 and NumPy 1.26.4 are installed through the locked uv environment. Setup/SDK checks and Java teaching-file checks passed on Windows. Fifteen Python checks cover setup/PGLfD plus actual model Jacobians, saved-pose IK, joint-limit sweeps, compliant force response, Cartesian stiffness, teaching target mapping and the robosuite reset/step interface. The native Windows viewer opened and closed successfully; its rendered scene was visually inspected. The full original exercise sequence and Java motion/force/logging assertions passed locally (`.tools/sim-jppzq3ok/report.json`), including Exercise 1 saving F0â€“F2/J0â€“J2, Exercise 2 replay, Exercise 6 force break and Exercise 7 singular postures. Exercises 3/4 remain student scaffolds and 8 covers its supplied approach. Full headless CI passed on Windows x64, Intel Mac and Apple Silicon Mac: [run 42198672432](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42198672432), tested revision `53a0590`. This includes setup, fifteen Python checks, seven Java teaching-file tests and the complete exercise integration run. The Mac desktop viewer was not manually tested. Hardware has not been connected.
 
 
-## Previous CoppeliaSim setup — 6 November 2026
+## Previous CoppeliaSim setup â€” 6 November 2026
 
 Checked locally on Windows x64:
 

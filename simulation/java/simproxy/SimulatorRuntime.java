@@ -19,6 +19,7 @@ import utility.DataHandler;
 
 /** Interception lives exclusively in the simulator source set and JVM. */
 final class SimulatorRuntime implements AutoCloseable {
+  static final String ROBOT_NAME = "LBR_iiwa_7_R800_1";
   final Bridge bridge;
   final Tool tool;
   final LBR robot;
@@ -124,7 +125,8 @@ final class SimulatorRuntime implements AutoCloseable {
                 case "getRootFrame":
                   return base;
                 case "getName":
-                  return "LBR_iiwa_7_R800_1";
+                case "getUniqueName":
+                  return ROBOT_NAME;
                 case "getJointCount":
                   return 7;
                 case "getController":
@@ -150,12 +152,16 @@ final class SimulatorRuntime implements AutoCloseable {
                             ((JointPosition) i.getArgument(0)).get(),
                             "which",
                             "flange");
-                    return Poses.frame(Bridge.array(result, "pose"));
+                    Frame f = Poses.frame(Bridge.array(result, "pose"));
+                    addRedundancy(f, result.getAsJsonObject("redundancy"), ((JointPosition) i.getArgument(0)).get());
+                    return f;
                   }
                 case "getInverseKinematicFromFrameAndRedundancy":
                   {
                     JsonObject target = new JsonObject();
                     MotionCodec.target(target, i.getArgument(0));
+                    if (!target.has("e1"))
+                      throw new IllegalArgumentException("Inverse kinematics requires E1 redundancy for " + ROBOT_NAME);
                     JsonObject result =
                         bridge.call(
                             "inverse",
@@ -163,6 +169,8 @@ final class SimulatorRuntime implements AutoCloseable {
                             target.get("pose"),
                             "seed",
                             target.has("seed") ? target.get("seed") : bridge.state().get("q"),
+                            "e1", target.get("e1"),
+                            "status", target.has("status") ? target.get("status") : bridge.state().getAsJsonObject("redundancy").get("status"),
                             "which",
                             "flange");
                     return new JointPosition(Bridge.array(result, "q"));
@@ -237,8 +245,14 @@ final class SimulatorRuntime implements AutoCloseable {
     String which = which(args.length > 0 ? args[0] : null);
     Frame f = Poses.frame(Bridge.array(state, which));
     if (args.length > 1 && args[1] != null && args[1] != base) f = f.copy((AbstractFrame) args[1]);
-    f.setAdditionalParameter(DataHandler.SIM_JOINT_SEED, Bridge.array(state, "q"));
+    addRedundancy(f, state.getAsJsonObject("redundancy"), Bridge.array(state, "q"));
     return f;
+  }
+
+  private static void addRedundancy(Frame frame, JsonObject red, double[] q) {
+    frame.setRedundancyInformation(ROBOT_NAME,
+        new LBRE1Redundancy(red.get("e1").getAsDouble(), red.get("status").getAsInt(), red.get("turn").getAsInt()));
+    frame.setAdditionalParameter(DataHandler.SIM_JOINT_SEED, q);
   }
 
   private ForceSensorData force(Object[] args) {
@@ -252,11 +266,11 @@ final class SimulatorRuntime implements AutoCloseable {
       t[1] += z * f[0] - x * f[2];
       t[2] += x * f[1] - y * f[0];
     }
-    if (args.length > 1 && args[1] != null) {
-      double[] r = Poses.matrix((AbstractFrame) args[1]);
-      f = transpose(r, f);
-      t = transpose(r, t);
-    }
+    double[] r = args.length > 1 && args[1] != null
+        ? Poses.matrix((AbstractFrame) args[1])
+        : Poses.matrix(Poses.frame(Bridge.array(state, origin)));
+    f = transpose(r, f);
+    t = transpose(r, t);
     return new ForceSensorData(
         Vector.of(f[0], f[1], f[2]),
         Vector.of(t[0], t[1], t[2]),

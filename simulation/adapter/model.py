@@ -43,8 +43,8 @@ class SunriseImpedance(JointPositionController):
 
 
 class Model:
-    def __init__(self, *, headless=True):
-        self.env = CourseEnvironment()
+    def __init__(self, *, headless=True, scene="empty"):
+        self.env = CourseEnvironment(scene=scene)
         self.env.reset()
         self.sim = self.env.sim
         self.m, self.d = self.sim.model._model, self.sim.data._data
@@ -108,13 +108,60 @@ class Model:
         force = -rot @ sensor(self.sensor_force) - gravity
         moment = -rot @ sensor(self.sensor_torque) - np.cross(rot @ self.tool_cog, gravity)
         moment -= np.cross(np.array(tcp[:3])-flange[:3], force)
-        external = self.jacobian("tcp").T @ np.r_[force, moment]
+        external = self.external_joint_torques()
         return {"q": self.d.qpos[self.qpos].tolist(), "dq": self.d.qvel[self.dofs].tolist(),
                 "tcp": tcp, "flange": flange, "force": force.tolist(), "torque": moment.tolist(),
                 "measuredTorque": self.d.qfrc_actuator[self.dofs].tolist(),
                 "externalTorque": external.tolist(), "time": float(self.d.time),
                 "target": np.r_[self.d.mocap_pos[self.target_mocap], self.d.mocap_quat[self.target_mocap][[1,2,3,0]]].tolist(),
-                "backend": "robosuite"}
+                "redundancy": self.redundancy(), "contacts": int(self.d.ncon), "backend": "robosuite"}
+
+    def external_joint_torques(self):
+        """Project actual contact and applied body loads onto every robot joint.
+
+        A flange-only wrench misses a hand pushing an upper-arm link. Exclude
+        gravity, actuators and joint-limit constraints from external contact.
+        """
+        result = self.d.qfrc_applied.copy()
+        for body in range(1, self.m.nbody):
+            wrench = self.d.xfrc_applied[body]
+            if np.any(wrench):
+                mujoco.mj_applyFT(self.m, self.d, wrench[:3], wrench[3:], self.d.xipos[body], body, result)
+        mujoco.mj_applyFT(self.m, self.d, self.force, np.zeros(3),
+                         self.d.site_xpos[self.sites["tcp"]], self.tool, result)
+        for index, contact in enumerate(self.d.contact):
+            local = np.zeros(6)
+            mujoco.mj_contactForce(self.m, self.d, index, local)
+            basis = contact.frame.reshape(3,3).T
+            for geom, sign in ((contact.geom1, -1), (contact.geom2, 1)):
+                body = int(self.m.geom_bodyid[geom])
+                if body:
+                    mujoco.mj_applyFT(self.m, self.d, sign*(basis @ local[:3]), sign*(basis @ local[3:]),
+                                     contact.pos, body, result)
+        return result[self.dofs]
+
+    def redundancy(self, q=None):
+        """Sunrise E1/status/turn for this iiwa (manual section 14.10).
+
+        Find the wrist-axis intersection from the model, avoiding assumptions
+        about offsets between the MJCF joint origins and the wrist centre.
+        """
+        data = self.d
+        if q is not None:
+            self.validate_joints(q)
+            data = self.ik
+            data.qpos[self.qpos] = q
+            mujoco.mj_forward(self.m, data)
+        angles = data.qpos[self.qpos]
+        ids = self.joints[4:]
+        projectors = [np.eye(3)-np.outer(a, a) for a in data.xaxis[ids]]
+        wrist = np.linalg.solve(sum(projectors),
+            sum(p @ x for p, x in zip(projectors, data.xanchor[ids])))
+        a1 = self.m.jnt_bodyid[self.joints[0]]
+        x = (data.xmat[a1].reshape(3,3).T @ (wrist-data.xanchor[self.joints[0]]))[0]
+        status = int(x < 0) | (int(angles[3] < 0) << 1) | (int(angles[5] <= 0) << 2)
+        turn = sum(int(angle < 0) << i for i, angle in enumerate(angles))
+        return {"e1": float(angles[2]), "status": status, "turn": turn}
 
     def set_target(self, pose):
         self.d.mocap_pos[self.target_mocap] = pose[:3]
@@ -132,53 +179,90 @@ class Model:
             return
         raise ValueError(f"Unknown model operation {name}")
 
-    def inverse(self, pose, seed, which="tcp", retry=False):
+    def inverse(self, pose, seed, which="tcp", retry=False, *, e1=None, status=None):
         pose = np.asarray(pose, dtype=float)
         if pose.shape != (7,) or not np.all(np.isfinite(pose)) or np.linalg.norm(pose[3:]) < 1e-8:
             raise ValueError("Expected finite XYZ + XYZW pose")
+        self.validate_joints(seed)
+        if e1 is not None and (not np.isfinite(e1) or not self.limits[2,0] <= e1 <= self.limits[2,1]):
+            raise ValueError("E1 must be finite and within joint 3 limits")
+        if status is not None and (not isinstance(status, (int, np.integer)) or not 0 <= status <= 7):
+            raise ValueError("Status must be an integer from 0 to 7")
+        lower, upper = self.limits.T.copy()
+        if status is not None:
+            for joint, bit in ((3, 1), (5, 2)):
+                if status & (1 << bit):
+                    upper[joint] = 0
+                else:
+                    lower[joint] = 0
+        free = np.array([i for i in range(7) if e1 is None or i != 2])
         candidates = [seed]
         if retry:
             candidates += [[0,.52,0,-1.05,0,.78,0], [.5,.7,.5,-1.2,.3,1,0], [-.5,.7,-.5,-1.2,-.3,1,0]]
+            if status is not None:
+                # Give the numerical solver both shoulder configurations. Axis
+                # sign bounds select the requested elbow and wrist branches.
+                candidates += [[a,.8,seed[2],(-1 if status & 2 else 1)*1.2,
+                                b,(-1 if status & 4 else 1)*.9,0]
+                               for a in (-2., 0., 2.) for b in (-2., 0., 2.)]
         target_rotation = Rotation.from_quat(pose[3:])
+
+        def residual(angles):
+            self.ik.qpos[self.qpos] = angles
+            mujoco.mj_forward(self.m, self.ik)
+            actual = self.pose(which, self.ik)
+            return np.r_[pose[:3]-actual[:3],
+                (target_rotation*Rotation.from_quat(actual[3:]).inv()).as_rotvec()]
+
+        def acceptable(angles, error):
+            if np.linalg.norm(error[:3]) >= .00015 or np.linalg.norm(error[3:]) >= .0015:
+                return False
+            if status is None:
+                return True
+            actual = self.redundancy(angles)["status"]
+            # The two wrist/elbow branches coincide at zero. Permit the shared
+            # boundary, while still checking the overhead/basic configuration.
+            mask = 1 | (2 if abs(angles[3]) > 1e-6 else 0) | (4 if abs(angles[5]) > 1e-6 else 0)
+            return (actual & mask) == (status & mask)
+
         for candidate in candidates:
-            q = np.clip(np.array(candidate, dtype=float), self.limits[:,0], self.limits[:,1])
+            q = np.clip(np.array(candidate, dtype=float), lower, upper)
+            if e1 is not None:
+                q[2] = e1  # Eliminated from the solve: a hard constraint, not a preference.
             for _ in range(160):
-                self.ik.qpos[self.qpos] = q
-                mujoco.mj_forward(self.m, self.ik)
-                actual = self.pose(which, self.ik)
-                error = np.r_[pose[:3]-actual[:3],
-                    (target_rotation*Rotation.from_quat(actual[3:]).inv()).as_rotvec()]
-                if np.linalg.norm(error[:3]) < .00015 and np.linalg.norm(error[3:]) < .0015:
+                error = residual(q)
+                if acceptable(q, error):
                     return q.tolist()
-                jac = self.jacobian(which, self.ik)
+                jac = self.jacobian(which, self.ik)[:, free]
                 pinv = jac.T @ np.linalg.solve(jac @ jac.T + np.eye(6)*1e-5, np.eye(6))
                 # Move away from joint limits in the redundant direction before
                 # clamping stalls the primary pose solve. No posture change when
                 # the supplied seed already achieves the requested pose.
-                distance_low = np.maximum(q-self.limits[:,0], .02)
-                distance_high = np.maximum(self.limits[:,1]-q, .02)
+                distance_low = np.maximum(q-lower, .02)
+                distance_high = np.maximum(upper-q, .02)
                 avoid = np.clip(.005*(1/distance_low**2-1/distance_high**2), -5, 5)
                 # The exact one-dimensional null vector avoids leaking the
                 # posture correction into the primary pose near singularities.
-                null = np.linalg.svd(jac, full_matrices=True)[2][-1]
-                delta = pinv @ error + null * (null @ avoid) * min(1., np.linalg.norm(error)/.05)
-                q = np.clip(q + delta*min(1., .15/max(np.max(np.abs(delta)), 1e-9)), self.limits[:,0], self.limits[:,1])
+                delta = pinv @ error
+                if e1 is None:
+                    null = np.linalg.svd(jac, full_matrices=True)[2][-1]
+                    delta += null * (null @ avoid) * min(1., np.linalg.norm(error)/.05)
+                q[free] = np.clip(q[free] + delta*min(1., .15/max(np.max(np.abs(delta)), 1e-9)), lower[free], upper[free])
             # Clamping a pseudoinverse step can stall at a joint limit. A bounded
             # solve redistributes motion across redundant joints without changing
             # the seed to an unrelated elbow branch during a LIN trajectory.
-            def residual(angles):
-                self.ik.qpos[self.qpos] = angles
-                mujoco.mj_forward(self.m, self.ik)
-                actual = self.pose(which, self.ik)
-                return np.r_[pose[:3]-actual[:3],
-                    (target_rotation*Rotation.from_quat(actual[3:]).inv()).as_rotvec()]
-            fit = least_squares(residual, q, bounds=(self.limits[:,0], self.limits[:,1]),
+            def constrained_residual(values):
+                angles = q.copy()
+                angles[free] = values
+                return residual(angles)
+            fit = least_squares(constrained_residual, q[free], bounds=(lower[free], upper[free]),
                                 max_nfev=1500, ftol=1e-10, xtol=1e-10, gtol=1e-10)
-            error = residual(fit.x)
-            if np.linalg.norm(error[:3]) < .00015 and np.linalg.norm(error[3:]) < .0015:
-                return fit.x.tolist()
-        print("IK diagnostic: " + json.dumps({"pose": pose.tolist(), "seed": list(seed), "fit": fit.x.tolist()}), flush=True)
-        raise ValueError(f"Unreachable {which} target: position error {np.linalg.norm(error[:3]):.4f} m, angle error {np.linalg.norm(error[3:]):.4f} rad")
+            q[free] = fit.x
+            error = residual(q)
+            if acceptable(q, error):
+                return q.tolist()
+        print("IK diagnostic: " + json.dumps({"pose": pose.tolist(), "seed": list(seed), "fit": q.tolist(), "e1": e1, "status": status}), flush=True)
+        raise ValueError(f"Unreachable {which} target with E1={e1}, status={status}: position error {np.linalg.norm(error[:3]):.4f} m, angle error {np.linalg.norm(error[3:]):.4f} rad")
 
     def validate_joints(self, q):
         q = np.asarray(q)

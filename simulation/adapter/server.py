@@ -118,6 +118,12 @@ class Engine:
         state = self.state if start is None else start
         q0 = np.array(state["q"])
         pose0 = state[which]
+        start_status = self.model.redundancy(q0)["status"]
+        # A frame without redundancy retains the motion's starting E1/status.
+        # Legacy simulator recordings carried only a full joint seed.
+        saved = self.model.redundancy(spec["seed"]) if "seed" in spec and not spec.get("hasRedundancy") else {}
+        e1 = spec.get("e1", saved.get("e1", float(q0[2])))
+        status = spec.get("status", saved.get("status", start_status)) if kind == "ptp" else start_status
         target = spec.get("pose")
         if kind == "relative":
             offset = spec["offset"]
@@ -139,7 +145,7 @@ class Engine:
                 target = self.model.call("forward", q1.tolist(), which)
             elif target is not None:
                 seed = spec.get("seed", q0.tolist())
-                q1 = np.array(self.model.inverse(target, seed, which, retry=True))
+                q1 = np.array(self.model.inverse(target, seed, which, retry=True, e1=e1, status=status))
             else:
                 raise ValueError("Motion has no target")
             velocity = spec.get("jointVelocity", .3)
@@ -157,7 +163,8 @@ class Engine:
                 if spec.get("cartAcceleration"):
                     duration = max(duration, math.sqrt(5.8*distance/spec["cartAcceleration"]))
         entry.update({"spec": spec, "kind": kind, "q0": q0, "q1": q1, "pose0": pose0,
-                      "target": target, "duration": duration, "elapsed": 0., "settling": 0., "lastQ": q0.tolist()})
+                      "target": target, "duration": duration, "elapsed": 0., "settling": 0., "lastQ": q0.tolist(),
+                      "e1": e1, "status": status})
         entry["state"] = "running"
         if record:
             self.trace.append({"event": "start", "id": entry["id"], "part": entry["part"], "type": kind, "time": self.time})
@@ -205,7 +212,10 @@ class Engine:
         pose = interpolate_pose(entry["pose0"], entry["target"], fraction)
         spec = entry["spec"]
         if entry["kind"] == "lin":
-            q = self.model.inverse(pose, entry["lastQ"], spec.get("which", "tcp"))
+            e1 = float(entry["q0"][2] + fraction*(entry["e1"]-entry["q0"][2]))
+            q = self.model.inverse(pose, entry["lastQ"], spec.get("which", "tcp"), e1=e1, status=entry["status"])
+            if np.max(np.abs(np.array(q)-entry["lastQ"])) > .25:
+                raise ValueError("LIN encounters a singularity or discontinuous joint solution; use a joint PTP to reposition")
         else:
             q = (entry["q0"] + fraction*(entry["q1"]-entry["q0"])).tolist()
             if spec.get("control", {}).get("kind") == "cartesian":
@@ -235,7 +245,9 @@ class Engine:
             if successor["kind"] == "ptp":
                 pose2 = self.model.call("forward", q2, successor["spec"].get("which", "tcp"))
             pose = interpolate_pose(pose, pose2, weight)
-            q = self.model.inverse(pose, entry.get("blendQ", q), entry["spec"].get("which", "tcp"))
+            e1 = (1-weight)*q[2] + weight*q2[2]
+            q = self.model.inverse(pose, entry.get("blendQ", q), entry["spec"].get("which", "tcp"),
+                                   e1=e1, status=entry["status"])
         entry["blendQ"] = q
         successor["elapsed"] = elapsed + .02
         successor["lastQ"] = q
@@ -252,7 +264,10 @@ class Engine:
                 f = rotation(self.state[cond["rotationWhich"]][3:]).T @ f
             elif "rotation" in cond:
                 f = np.array(cond["rotation"]).reshape(3, 3).T @ f
-            return np.linalg.norm(f[cond["axes"]]) > cond["threshold"] + cond.get("tolerance", 0)
+            # Sunrise tolerance bounds sensor estimation uncertainty; it is not
+            # extra force added to the threshold. The synthetic sensor has no
+            # KUKA uncertainty estimate, so only the force threshold is modeled.
+            return np.linalg.norm(f[cond["axes"]]) > cond["threshold"]
         if kind == "jointTorque":
             value = self.state["externalTorque"][cond["joint"]]
             return value < cond["min"] or value > cond["max"]
@@ -275,7 +290,8 @@ class Engine:
             self.plan(entry)
         else:
             entry["state"] = "finished"
-            self.trace.append({"event": "finish", "id": entry["id"], "fired": entry["fired"], "time": self.time})
+            self.trace.append({"event": "finish", "id": entry["id"], "fired": entry["fired"], "time": self.time,
+                               "force": self.state["force"], "contacts": self.state["contacts"]})
             self.active = None
 
     def tick(self):
@@ -322,7 +338,8 @@ class Engine:
                                 # used to estimate duration. LIN settles on pose.
                                 actual = self.state[spec.get("which", "tcp")]
                                 reached = (np.linalg.norm(np.array(actual[:3])-entry["target"][:3]) < .001
-                                    and abs(np.dot(actual[3:], entry["target"][3:])) > math.cos(.005/2))
+                                    and abs(np.dot(actual[3:], entry["target"][3:])) > math.cos(.005/2)
+                                    and abs(self.state["q"][2]-entry["e1"]) < .001)
                             if entry.get("blend", {}).get("started") or compliant or reached:
                                 self.finish(entry)
                             else:
@@ -387,9 +404,11 @@ class Engine:
             self.manual = None
             self.follow_target = False
         elif action == "inverse":
-            return {"q": self.model.inverse(command["pose"], command.get("seed", self.state["q"]), command.get("which", "tcp"), True)}
+            return {"q": self.model.inverse(command["pose"], command.get("seed", self.state["q"]),
+                command.get("which", "tcp"), True, e1=command.get("e1"), status=command.get("status"))}
         elif action == "forward":
-            return {"pose": self.model.call("forward", command["q"], command.get("which", "tcp"))}
+            return {"pose": self.model.call("forward", command["q"], command.get("which", "tcp")),
+                    "redundancy": self.model.redundancy(command["q"])}
         elif action == "trace":
             return {"events": list(self.trace)}
         else:
@@ -403,8 +422,9 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--session", type=Path, default=ROOT / ".tools/adapter-session.json")
     parser.add_argument("--fast", action="store_true")
+    parser.add_argument("--scene", choices=["empty", "wire"], default="empty")
     args = parser.parse_args()
-    engine = Engine(Model(headless=args.headless))
+    engine = Engine(Model(headless=args.headless, scene=args.scene))
     token = secrets.token_urlsafe(32)
     requests = Queue(maxsize=256)
 

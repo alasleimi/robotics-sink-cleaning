@@ -2,6 +2,7 @@ package simproxy;
 
 import com.google.gson.*;
 import com.kuka.roboticsAPI.conditionModel.*;
+import com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy;
 import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.motionModel.*;
 import com.kuka.roboticsAPI.motionModel.controlModeModel.*;
@@ -56,7 +57,7 @@ final class MotionCodec {
     if (out.has("conditions")) for (JsonElement e : out.getAsJsonArray("conditions")) breaks.add(e);
     for (ICondition c : m.getConditions()) {
       if (!conditions.contains(c)) conditions.add(c);
-      JsonObject b = condition(c);
+      JsonObject b = condition(c, which);
       b.addProperty("id", conditions.indexOf(c));
       breaks.add(b);
     }
@@ -110,10 +111,16 @@ final class MotionCodec {
     if (frame.hasAdditionalParameter(DataHandler.SIM_JOINT_SEED))
       o.add(
           "seed", Bridge.JSON.toJsonTree(frame.getAdditionalParameter(DataHandler.SIM_JOINT_SEED)));
-    if (!frame.getRedundancyInformation().isEmpty())
-      throw new UnsupportedOperationException(
-          "KUKA E1/status/turn constraints are not simulated. Teach simulator frames to preserve"
-              + " their joint seed, or use explicit joint targets.");
+    var redundancy = frame.getRedundancyInformation().get(SimulatorRuntime.ROBOT_NAME);
+    if (redundancy != null) {
+      if (!(redundancy instanceof LBRE1Redundancy red)) throw unsupported(redundancy);
+      o.addProperty("hasRedundancy", true);
+      // The SDK permits any subset; getters throw for parameters not supplied.
+      try { o.addProperty("e1", red.getE1()); } catch (IllegalStateException absent) { }
+      try { o.addProperty("status", red.getStatus()); } catch (IllegalStateException absent) { }
+      // iiwa joints are all limited below 180 degrees, so Sunrise ignores Turn.
+      try { o.addProperty("turn", red.getTurn()); } catch (IllegalStateException absent) { }
+    }
   }
 
   private JsonObject control(IMotionControlMode mode) {
@@ -155,7 +162,7 @@ final class MotionCodec {
     throw unsupported(mode);
   }
 
-  private JsonObject condition(ICondition c) {
+  private JsonObject condition(ICondition c, String which) {
     if (c instanceof ForceCondition f) {
       JsonObject o =
           Bridge.object(
@@ -167,7 +174,9 @@ final class MotionCodec {
               f.getThreshold(),
               "tolerance",
               f.getTolerance());
-      if (f.getOrientationFrame() != null) reference(o, "rotation", f.getOrientationFrame(), true);
+      AbstractFrame ref = f.getOrientationFrame() != null ? f.getOrientationFrame() : f.getMeasureFrame();
+      if (ref != null) reference(o, "rotation", ref, true);
+      else o.addProperty("rotationWhich", which);
       return o;
     }
     if (c instanceof JointTorqueCondition t)
@@ -184,7 +193,7 @@ final class MotionCodec {
       String type = c instanceof OrCondition ? "or" : c instanceof AndCondition ? "and" : null;
       if (type == null) throw unsupported(c);
       JsonArray children = new JsonArray();
-      for (ICondition child : a.getConditions()) children.add(condition(child));
+      for (ICondition child : a.getConditions()) children.add(condition(child, which));
       return Bridge.object("type", type, "children", children);
     }
     throw unsupported(c);

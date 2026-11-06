@@ -31,11 +31,11 @@ uv run --locked pytest -q               # Check the setup helpers
 
 `build` does not connect to the robot. In IntelliJ, open this folder as a Gradle project and select the JDK path recorded in `.tools/local.json`. Original exercise entry points still connect to the real robot; follow [Arne's lab instructions](docs/arne-exercises.md).
 
-**Use `exercise 01` to start teaching.** It opens its own simulator and runs Arne's original Java entry point through the adapter. Save three frames (`F0`–`F2`) and joint positions (`J0`–`J2`) before Exercise 2. Simulation files live in `data/simulation/robosuite`; the original hardware entry points keep using `data`.
+**Use `exercise 01` to start teaching.** It opens its own simulator and runs Arne's original Java entry point through the adapter. Save three frames (`F0`–`F2`) and joint positions (`J0`–`J2`) before Exercise 2. Simulation files live in `data/simulation/robosuite-sunrise`; the original hardware entry points keep using `data`.
 
 See the short [exercise guide](simulation/README.md) for teaching controls, prerequisites, supported API calls, and simulator limits. The adapter approximates motion planning and impedance; it does not reproduce the Sunrise controller. Exercises 3/4 and the wire-following part of 8 remain student TODOs.
 
-Existing CoppeliaSim recordings remain in their previous directory. Re-teach poses for the new model; they are not automatically imported as equivalent robosuite poses.
+E1-constrained IK/PTP/LIN and taught elbow replay are supported. The flange convention matches Arne's supplied kinematics. Existing CoppeliaSim and first-port robosuite recordings remain in their previous directories; re-teach Cartesian poses after this correction. Add `--scene wire` for Exercise 8's generic contact practice fixture.
 
 ## Where things belong
 

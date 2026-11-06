@@ -39,7 +39,8 @@ public final class ContractCheck {
         return;
       }
       if (args.length > 0 && args[0].equals("wire")) {
-        tool.move(ptp(new Frame(400, 200, 350, Math.PI, 0, Math.PI)));
+        tool.move(ptp(new Frame(400, 200, 430, Math.PI, 0, Math.PI)));
+        tool.move(lin(new Frame(400, 200, 350, Math.PI, 0, Math.PI)));
         DataHandler.saveFrame("wireloop_start", SunriseConnector.getTcpFrame());
         System.out.println("WIRE FIXTURE PASS");
         return;

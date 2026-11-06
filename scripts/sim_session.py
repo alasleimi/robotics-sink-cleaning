@@ -14,7 +14,7 @@ from common import ROOT, load_config, local_path, gradle
 
 
 class Session:
-    def __init__(self, *, headless=False, fast=False, build=True):
+    def __init__(self, *, headless=False, fast=False, build=True, scene="empty"):
         self.config = load_config()
         if build:
             gradle(self.config, "simClasspath")
@@ -29,7 +29,7 @@ class Session:
                 python = python.with_name("mjpython")
                 if not python.is_file():
                     raise RuntimeError("MuJoCo viewer launcher missing; run setup again.")
-            bridge_args = [str(python), str(ROOT / "simulation/adapter/server.py"), "--session", str(self.session_file)]
+            bridge_args = [str(python), str(ROOT / "simulation/adapter/server.py"), "--session", str(self.session_file), "--scene", scene]
             if fast:
                 bridge_args.append("--fast")
             if headless:
@@ -67,7 +67,7 @@ class Session:
         java = local_path(self.config, "java_home") / "bin" / ("java.exe" if os.name == "nt" else "java")
         classpath = (ROOT / ".tools/simulator-classpath.txt").read_text()
         return self.start([str(java), f"-Djava.awt.headless={str(headless).lower()}",
-            f"-Drobot.dataDir={data or ROOT / 'data/simulation/robosuite'}", f"-Dsim.session={self.session_file}",
+            f"-Drobot.dataDir={data or ROOT / 'data/simulation/robosuite-sunrise'}", f"-Dsim.session={self.session_file}",
             "-cp", classpath, main, *args], label, hidden=headless)
 
     def close(self):
@@ -92,8 +92,8 @@ class Session:
         self.close()
 
 
-def run_exercise(exercise, *, headless=False, fast=False, data=None):
-    with Session(headless=headless, fast=fast) as session:
+def run_exercise(exercise, *, headless=False, fast=False, data=None, scene="empty"):
+    with Session(headless=headless, fast=fast, scene=scene) as session:
         print(f"Simulation ready. Logs: {session.folder}", flush=True)
         process = session.java("simproxy.Launcher", exercise, data=data, headless=headless)
         try:

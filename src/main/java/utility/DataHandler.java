@@ -75,6 +75,17 @@ public final class DataHandler {
     }
   }
 
+  private static String redundancyValue(java.util.function.Supplier<? extends Number> read) {
+    try {
+      Number value = read.get();
+      if (!Double.isFinite(value.doubleValue()))
+        throw new IllegalArgumentException("Cannot save non-finite redundancy metadata");
+      return value.toString();
+    } catch (IllegalStateException absent) {
+      return "-";
+    }
+  }
+
   public static void saveFrame(String name, Frame frame) {
     Objects.requireNonNull(frame, "Cannot save a null frame");
     Path destination = file("frames", name, ".frm");
@@ -106,18 +117,16 @@ public final class DataHandler {
         frame.getRedundancyInformation().entrySet()) {
       if (entry.getValue() instanceof LBRE1Redundancy) {
         LBRE1Redundancy red = (LBRE1Redundancy) entry.getValue();
-        if (!Double.isFinite(red.getE1()))
-          throw new IllegalArgumentException("Cannot save a non-finite elbow angle");
         String key =
             Base64.getUrlEncoder().encodeToString(entry.getKey().getBytes(StandardCharsets.UTF_8));
         text.append(
             String.format(
                 Locale.ROOT,
-                "# LBRE1-v1 %s %.12f %d %d%n",
+                "# LBRE1-v2 %s %s %s %s%n",
                 key,
-                red.getE1(),
-                red.getStatus(),
-                red.getTurn()));
+                redundancyValue(red::getE1),
+                redundancyValue(red::getStatus),
+                redundancyValue(red::getTurn)));
       } else {
         throw new IllegalArgumentException(
             "Unsupported redundancy type: " + entry.getValue().getClass().getName());
@@ -178,16 +187,21 @@ public final class DataHandler {
         new Frame(
             v[0], v[1], v[2], Math.toRadians(v[3]), Math.toRadians(v[4]), Math.toRadians(v[5]));
     for (String line : lines.subList(1, lines.size())) {
-      if (line.startsWith("# LBRE1-v1 ")) {
+      if (line.startsWith("# LBRE1-v1 ") || line.startsWith("# LBRE1-v2 ")) {
         String[] p = line.trim().split("\\s+");
         if (p.length != 6)
           throw new IllegalArgumentException("Invalid redundancy metadata in " + path);
         String key = new String(Base64.getUrlDecoder().decode(p[2]), StandardCharsets.UTF_8);
-        double e1 = Double.parseDouble(p[3]);
-        if (!Double.isFinite(e1))
-          throw new IllegalArgumentException("Non-finite elbow metadata in " + path);
-        result.setRedundancyInformation(
-            key, new LBRE1Redundancy(e1, Integer.parseInt(p[4]), Integer.parseInt(p[5])));
+        LBRE1Redundancy red = new LBRE1Redundancy();
+        if (!p[3].equals("-")) {
+          double e1 = Double.parseDouble(p[3]);
+          if (!Double.isFinite(e1))
+            throw new IllegalArgumentException("Non-finite E1 metadata in " + path);
+          red.setE1(e1);
+        }
+        if (!p[4].equals("-")) red.setStatus(Integer.parseInt(p[4]));
+        if (!p[5].equals("-")) red.setTurn(Integer.parseInt(p[5]));
+        result.setRedundancyInformation(key, red);
       } else if (line.startsWith("# sim-joints-v1 ")) {
         result.setAdditionalParameter(
             SIM_JOINT_SEED, values(line.substring("# sim-joints-v1 ".length()), 7, path));

@@ -13,14 +13,15 @@ def main() -> None:
     parser.add_argument("exercise", nargs="?", choices=["01", "02", "03", "04", "05a", "05b", "06", "07", "08"])
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--fast", action="store_true", help="Run simulation without wall-clock pacing")
-    parser.add_argument("--data", help="Separate teaching directory (default data/simulation/robosuite)")
+    parser.add_argument("--data", help="Separate teaching directory (default data/simulation/robosuite-sunrise)")
+    parser.add_argument("--scene", choices=["empty", "wire"], default="empty", help="Optional wire-loop practice course")
     args = parser.parse_args()
     config = load_config()
     if args.command == "exercise":
         if not args.exercise:
             parser.error("Choose an exercise, e.g. exercise 01")
         from sim_session import run_exercise
-        run_exercise(args.exercise, headless=args.headless, fast=args.fast, data=args.data)
+        run_exercise(args.exercise, headless=args.headless, fast=args.fast, data=args.data, scene=args.scene)
     elif args.command == "build":
         gradle(config, "classes", "run")
     elif args.command == "doctor":
@@ -28,7 +29,7 @@ def main() -> None:
     else:
         from sim_session import Session
         import time
-        with Session(headless=args.headless, fast=args.fast, build=False) as session:
+        with Session(headless=args.headless, fast=args.fast, build=False, scene=args.scene) as session:
             print(f"Robosuite iiwa7 ready. Logs: {session.folder}", flush=True)
             try:
                 while session.bridge.poll() is None:
