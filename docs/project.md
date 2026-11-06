@@ -9,10 +9,10 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Task | State | Next action |
 | --- | --- | --- |
 | Shared repository and repeatable setup | Implemented; validation recorded below | Canel clones after being invited |
-| Sunrise simulation adapter | Design only | Prove one PTP motion from Task 02 |
-| Robot/API exercises | Sources compile; hardware execution untested | Work through course exercises in the lab |
+| Sunrise simulation adapter | Implemented for the exercise API subset; Windows physics tested | Use the simulation guide; exact Sunrise dynamics/E1 constraints are outside its scope |
+| Robot/API exercises | Original mains tested in simulation; student TODOs preserved | Teach F0-F2/J0-J2 in 01, then run 02; hardware execution remains untested |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
-| Demonstration recording | Logging and hand-guiding helpers inspected | Agree on safe lab setup and recording fields |
+| Demonstration recording | Simulator teaching saves and FileLogger tested | Agree on lab recording fields and setup |
 | PushWiper/adaptive wiping | Reading pending | Summarise their inputs, outputs, and feedback |
 | Sink reconstruction | Unstarted | Photograph sink and assess geometry capture |
 

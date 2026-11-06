@@ -79,7 +79,7 @@ public class ExecutionController {
 		SunriseExecutionService sunExecService = (SunriseExecutionService) SunriseConnector.getCabinet()
 				.getExecutionService();
 		while (sunExecService.getActiveContainerCount() > 0)
-			;
+			ThreadUtil.milliSleep(10);
 	}
 
 }

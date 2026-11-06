@@ -1,238 +1,162 @@
 package utility;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
-
-import robot.SunriseConnector;
-
-import com.kuka.common.params.IParameter;
-import com.kuka.common.params.IParameterSet;
+import java.util.regex.*;
+import java.util.stream.Stream;
 import com.kuka.roboticsAPI.deviceModel.JointPosition;
+import com.kuka.roboticsAPI.deviceModel.LBRE1Redundancy;
 import com.kuka.roboticsAPI.geometricModel.Frame;
 import com.kuka.roboticsAPI.geometricModel.redundancy.IRedundancyCollection;
+import robot.SunriseConnector;
 
-public class DataHandler {
+/** Teaching files: millimetres/degrees in .frm, radians in .jnt. */
+public final class DataHandler {
+    public static final String DataPath = System.getProperty("robot.dataDir", "data");
+    public static final String SIM_JOINT_SEED = "simulationJointSeed";
+    private DataHandler() {}
 
-    /**
-     * Main path for storing and loading data.
-     */
-    // public static final String DataPath = System.getenv("HOME") + "/RobotExercises";
-    public static final String DataPath = "data";
-
-    /**
-     * Not instantiable
-     */
-    private DataHandler() {
+    private static Path file(String folder, String name, String extension) {
+        if (name == null || !name.matches("[A-Za-z0-9_-]+"))
+            throw new IllegalArgumentException("Use letters, numbers, underscores or hyphens for a teaching name.");
+        return Paths.get(DataPath, folder, name + extension);
     }
 
-    public static String getNextFrameName() {
-        String dirPath = DataHandler.DataPath + "/frames/";
-
-        File fileObject = new File(dirPath);
-        fileObject.mkdirs();
-
-        int number = Arrays.stream(Objects.requireNonNull(fileObject.list()))
-                .filter(s -> s.matches("F\\d+.frm"))
-                .map(s -> s.replace("F", "").replace(".frm", ""))
-                .mapToInt(Integer::parseInt)
-                .max().orElse(0) + 1;
-
-        return ("F" + number);
-    }
-
-    /**
-     * Saves a frame in the frames folder of the configured data path.
-     *
-     * @param name  Name of the file [without ending]
-     * @param frame Frame to be saved
-     */
-    public static void saveFrame(String name, Frame frame) {
-        String filePath = DataHandler.DataPath + "/frames";
-
-        File fileObject = new File(filePath);
-        fileObject.mkdirs();
-
-        System.out.println("Writing to file '" + filePath + "/" + name + ".frm" + "'");
-
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".frm"),
-                StandardCharsets.UTF_8))) {
-            writer.write(String.format(Locale.US, "%.3f", frame.getX()));
-            writer.write(String.format(Locale.US, " %.3f", frame.getY()));
-            writer.write(String.format(Locale.US, " %.3f", frame.getZ()));
-            writer.write(String.format(Locale.US, " %.3f", Math.toDegrees(frame.getAlphaRad())));
-            writer.write(String.format(Locale.US, " %.3f", Math.toDegrees(frame.getBetaRad())));
-            writer.write(String.format(Locale.US, " %.3f", Math.toDegrees(frame.getGammaRad())));
-
-            writer.write("\n");
-
-            Map<String, IRedundancyCollection> params = frame.getRedundancyInformation();
-
-            IParameterSet red = params.get(params.keySet().toArray()[0]).getAllParameters();
-            // System.out.println(red.toString());
-
-            for (@SuppressWarnings("rawtypes")
-                    IParameter p : red) {
-                writer.write(p.value() + " ");
+    private static String next(String folder, String prefix, String extension) {
+        Path dir = Paths.get(DataPath, folder);
+        try {
+            Files.createDirectories(dir);
+            Pattern pattern = Pattern.compile(Pattern.quote(prefix) + "(\\d+)" + Pattern.quote(extension));
+            int max = -1;
+            try (Stream<Path> paths = Files.list(dir)) {
+                for (Path path : (Iterable<Path>) paths::iterator) {
+                    Matcher match = pattern.matcher(path.getFileName().toString());
+                    if (Files.isRegularFile(path) && match.matches())
+                        max = Math.max(max, Integer.parseInt(match.group(1)));
+                }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            return prefix + Math.addExact(max, 1);
+        } catch (IOException e) { throw new IllegalStateException("Cannot list teaching files in " + dir, e); }
     }
 
-    /**
-     * Saves the current tcp frame in the frames folder of the configured data path. Filename is 'F' with an
-     * automatically increasing number according to the frame files already existing in the frames folder.
-     */
+    public static String getNextFrameName() { return next("frames", "F", ".frm"); }
+    public static String getNextJointPosName() { return next("joint_positions", "J", ".jnt"); }
+
+    private static void write(Path path, String text) {
+        try {
+            Files.createDirectories(path.getParent());
+            Path temporary = Files.createTempFile(path.getParent(), ".teach-", ".tmp");
+            try {
+                Files.write(temporary, text.getBytes(StandardCharsets.UTF_8));
+                try { Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING); }
+                catch (AtomicMoveNotSupportedException e) { Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING); }
+            } finally { Files.deleteIfExists(temporary); }
+            System.out.println("Saved " + path);
+        } catch (IOException e) { throw new IllegalStateException("Cannot save " + path, e); }
+    }
+
+    public static void saveFrame(String name, Frame frame) {
+        Objects.requireNonNull(frame, "Cannot save a null frame");
+        Path destination = file("frames", name, ".frm");
+        Frame world = new Frame(frame.transformationFromWorld());
+        for (double v : new double[]{world.getX(),world.getY(),world.getZ(),world.getAlphaRad(),world.getBetaRad(),world.getGammaRad()})
+            if (!Double.isFinite(v)) throw new IllegalArgumentException("Cannot save a non-finite pose");
+        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%.9f %.9f %.9f %.9f %.9f %.9f%n",
+                world.getX(), world.getY(), world.getZ(), Math.toDegrees(world.getAlphaRad()),
+                Math.toDegrees(world.getBetaRad()), Math.toDegrees(world.getGammaRad())));
+        // Named, versioned metadata avoids the old, undocumented parameter ordering.
+        // A plain frame without redundancy is valid and needs no second line.
+        for (Map.Entry<String, IRedundancyCollection> entry : frame.getRedundancyInformation().entrySet()) {
+            if (entry.getValue() instanceof LBRE1Redundancy) {
+                LBRE1Redundancy red = (LBRE1Redundancy) entry.getValue();
+                if (!Double.isFinite(red.getE1())) throw new IllegalArgumentException("Cannot save a non-finite elbow angle");
+                String key = Base64.getUrlEncoder().encodeToString(entry.getKey().getBytes(StandardCharsets.UTF_8));
+                text.append(String.format(Locale.ROOT, "# LBRE1-v1 %s %.12f %d %d%n", key, red.getE1(), red.getStatus(), red.getTurn()));
+            } else {
+                throw new IllegalArgumentException("Unsupported redundancy type: " + entry.getValue().getClass().getName());
+            }
+        }
+        if (frame.hasAdditionalParameter(SIM_JOINT_SEED)) {
+            double[] seed = (double[]) frame.getAdditionalParameter(SIM_JOINT_SEED);
+            if (seed.length != 7) throw new IllegalArgumentException("Expected seven seed joints");
+            text.append("# sim-joints-v1");
+            for (double q : seed) {
+                if (!Double.isFinite(q)) throw new IllegalArgumentException("Cannot save a non-finite joint seed");
+                text.append(String.format(Locale.ROOT, " %.12f", q));
+            }
+            text.append('\n');
+        }
+        write(destination, text.toString());
+    }
+
     public static void saveFrame() {
-        String name = SunriseConnector.getControlGui().getFrameName();
-        saveFrame(name, SunriseConnector.getTcpFrame());
+        saveFrame(SunriseConnector.getControlGui().getFrameName(), SunriseConnector.getTcpFrame());
         SunriseConnector.getControlGui().setNextFrameName(getNextFrameName());
     }
 
-    /**
-     * Loads a frame from the frames folder of the configured data path.
-     *
-     * @param filename name of the frame to be loaded
-     * @return Frame object. Returns null, if the corresponding file does not exist
-     */
-    public static Frame loadFrame(String filename) {
-        String filePath = DataHandler.DataPath + "/frames/" + filename + ".frm";
+    private static List<String> read(Path path) {
+        try { return Files.readAllLines(path, StandardCharsets.UTF_8); }
+        catch (NoSuchFileException e) {
+            throw new IllegalStateException("Missing taught position: " + path + ". Save it in Exercise 1 first. Existing files are never renumbered automatically.", e);
+        } catch (IOException e) { throw new IllegalStateException("Cannot read " + path, e); }
+    }
 
-        System.out.println("Reading from file '" + filePath + "'");
-        Frame result = null;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"))) {
-
-            String[] valuesString = reader.readLine().split(" ");
-            double[] valuesDouble = new double[valuesString.length];
-
-            for (int i = 0; i < valuesString.length; i++) {
-                valuesDouble[i] = Double.parseDouble(valuesString[i]);
-            }
-
-            result = new Frame(valuesDouble[0], valuesDouble[1], valuesDouble[2], Math.toRadians(valuesDouble[3]),
-                    Math.toRadians(valuesDouble[4]), Math.toRadians(valuesDouble[5]));
-
-            // String[] redundancyString = reader.readLine().split(" ");
-            //
-            // System.out.println("Redundancies: " + Arrays.toString(redundancyString));
-            //
-            //
-            // Map<String, IRedundancyCollection> params = result.getRedundancyInformation();
-            // IRedundancyCollection red = params.get(params.keySet().toArray()[0]);
-            //
-            // IParameterSet tmp = red.getAllParameters();
-            //
-            // RobotController.getInstance().getRobot().move(ptp(P1));
-            // // params.put(params.keySet().toArray()[0], red);
-            //
-            // result.setRedundancyInformation(RobotController.getInstance().getRobot(), red);
-
-        } catch (IOException e) {
-            System.err.println("could not read data from " + filePath + "/" + filename);
+    private static double[] values(String line, int count, Path path) {
+        String[] words = line.trim().split("\\s+");
+        if (words.length != count) throw new IllegalArgumentException("Expected " + count + " values in " + path);
+        double[] values = new double[count];
+        for (int i = 0; i < count; i++) {
+            values[i] = Double.parseDouble(words[i]);
+            if (!Double.isFinite(values[i])) throw new IllegalArgumentException("Non-finite value in " + path);
         }
+        return values;
+    }
 
+    public static Frame loadFrame(String name) {
+        Path path = file("frames", name, ".frm");
+        List<String> lines = read(path);
+        if (lines.isEmpty()) throw new IllegalArgumentException("Empty teaching file: " + path);
+        double[] v = values(lines.get(0), 6, path);
+        Frame result = new Frame(v[0], v[1], v[2], Math.toRadians(v[3]), Math.toRadians(v[4]), Math.toRadians(v[5]));
+        for (String line : lines.subList(1, lines.size())) {
+            if (line.startsWith("# LBRE1-v1 ")) {
+                String[] p = line.trim().split("\\s+");
+                if (p.length != 6) throw new IllegalArgumentException("Invalid redundancy metadata in " + path);
+                String key = new String(Base64.getUrlDecoder().decode(p[2]), StandardCharsets.UTF_8);
+                double e1 = Double.parseDouble(p[3]);
+                if (!Double.isFinite(e1)) throw new IllegalArgumentException("Non-finite elbow metadata in " + path);
+                result.setRedundancyInformation(key, new LBRE1Redundancy(e1, Integer.parseInt(p[4]), Integer.parseInt(p[5])));
+            } else if (line.startsWith("# sim-joints-v1 ")) {
+                result.setAdditionalParameter(SIM_JOINT_SEED, values(line.substring("# sim-joints-v1 ".length()), 7, path));
+            } else if (!line.trim().isEmpty() && !line.startsWith("#")) {
+                // Old files saved positional redundancy values but never restored them.
+                System.err.println("Legacy unnamed redundancy in " + path + " cannot be interpreted reliably; pose loaded. Re-teach to preserve elbow configuration.");
+            }
+        }
         return result;
     }
 
-    public static String getNextJointPosName() {
-        String dirPath = DataHandler.DataPath + "/joint_positions/";
-
-        File fileObject = new File(dirPath);
-        fileObject.mkdirs();
-
-        ArrayList<String> names = new ArrayList<String>(Arrays.asList(Objects.requireNonNull(fileObject.list())));
-
-        int number = 0;
-        for (int i = names.size() - 1; i >= 0; i--) {
-            try {
-                int n = Integer.parseInt(names.get(i).replace("J", "").replace(".jnt", "")) + 1;
-                if (n > number)
-                    number = n;
-            } catch (Exception e) {
-                continue;
-            }
+    public static void saveJointPosition(String name, JointPosition joints) {
+        Objects.requireNonNull(joints, "Cannot save null joints");
+        StringJoiner line = new StringJoiner(" ");
+        for (int i = 0; i < 7; i++) {
+            if (!Double.isFinite(joints.get(i))) throw new IllegalArgumentException("Cannot save a non-finite joint angle");
+            line.add(String.format(Locale.ROOT, "%.12f", joints.get(i)));
         }
-        return ("J" + number);
+        write(file("joint_positions", name, ".jnt"), line.toString() + "\n");
     }
 
-    /**
-     * Saves a joint position in the joints folder of the configured data path.
-     *
-     * @param name     Name of the file [without ending]
-     * @param jointPos Joint position to be saved
-     */
-    public static void saveJointPosition(String name, JointPosition jointPos) {
-        String filePath = DataHandler.DataPath + "/joint_positions";
-
-        File fileObject = new File(filePath);
-        fileObject.mkdirs();
-
-        System.out.println("Writing to file '" + filePath + "/" + name + ".jnt" + "'");
-
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath + "/" + name + ".jnt"),
-                StandardCharsets.UTF_8))) {
-            // write joint position
-            writer.write(String.format(Locale.US, "%.3f", jointPos.get(0)));
-            for (int i = 1; i < 7; i++) {
-                writer.write(String.format(Locale.US, " %.3f", jointPos.get(i)));
-            }
-
-        } catch (IOException e) {
-            // report
-        }
-    }
-
-    /**
-     * Saves the current joint position in the joints folder of the configured data path. Filename is 'J' with an
-     * automatically increasing number according to the joint position files already existing in the joints folder.
-     */
     public static void saveJointPosition() {
-        String name = SunriseConnector.getControlGui().getJointPosName();
-        saveJointPosition(name, SunriseConnector.getRobot().getCurrentJointPosition());
+        saveJointPosition(SunriseConnector.getControlGui().getJointPosName(), SunriseConnector.getRobot().getCurrentJointPosition());
         SunriseConnector.getControlGui().setNextJointPosName(getNextJointPosName());
     }
 
-    /**
-     * Loads a joint position from the joints folder of the configured data path.
-     *
-     * @param filename name of the joint to be loaded
-     * @return JointPosition object. Returns null, if the corresponding file does not exist
-     */
-    public static JointPosition loadJointPos(String filename) {
-        String filePath = DataHandler.DataPath + "/joint_positions/" + filename + ".jnt";
-
-        System.out.println("Reading from file '" + filePath + "'");
-        JointPosition result = null;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "utf-8"))) {
-
-            String line = reader.readLine();
-            line.replaceAll("  ", " ");
-            String[] valuesString = line.split(" ");
-            // System.out.println(line);
-            // System.out.println("line: " + Arrays.toString(valuesString));
-            double[] valuesDouble = new double[valuesString.length];
-
-            for (int i = 0; i < valuesString.length; i++) {
-                valuesDouble[i] = Double.parseDouble(valuesString[i]);
-            }
-
-            result = new JointPosition(valuesDouble);
-
-        } catch (IOException e) {
-            System.err.println("could not read data from " + filePath + "/" + filename);
-        }
-
-        return result;
+    public static JointPosition loadJointPos(String name) {
+        Path path = file("joint_positions", name, ".jnt");
+        List<String> lines = read(path);
+        if (lines.isEmpty()) throw new IllegalArgumentException("Empty teaching file: " + path);
+        return new JointPosition(values(lines.get(0), 7, path));
     }
-
 }

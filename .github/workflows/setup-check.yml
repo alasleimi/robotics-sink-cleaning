@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: [windows-latest, macos-15, macos-15-intel]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v7
@@ -26,3 +26,14 @@ jobs:
         run: uv run --locked scripts/setup.py
       - name: Check setup helpers and PGLfD geometry
         run: uv run --locked pytest -q tests third_party/pglfd/python/tests/geom
+      - name: Compile simulator adapter and test teaching files
+        run: uv run --locked python scripts/check_java.py
+      - name: Run original exercises against CoppeliaSim physics
+        run: uv run --locked scripts/check_simulation.py
+      - name: Upload simulation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-logs-${{ matrix.os }}
+          path: .tools/sim-*/*.log
+          retention-days: 7

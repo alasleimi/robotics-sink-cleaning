@@ -84,17 +84,25 @@ public class ControlGUI {
 				});
 				t.start();
 			} else if (e.getActionCommand().equals(ButtonCommands.SAVE_FRAME.toString())) {
-				DataHandler.saveFrame();
+				try { DataHandler.saveFrame(); } catch (RuntimeException error) { showSaveError(error); }
 			} else if (e.getActionCommand().equals(ButtonCommands.SAVE_JOINT_POS.toString())) {
-				DataHandler.saveJointPosition();
+				try { DataHandler.saveJointPosition(); } catch (RuntimeException error) { showSaveError(error); }
 			} else {
 				System.err.println("Button not yet implemented");
 			}
 		}
 	};
 
+	private void showSaveError(RuntimeException error) {
+		if (java.awt.GraphicsEnvironment.isHeadless()) throw error;
+		javax.swing.JOptionPane.showMessageDialog(null, error.getMessage(), "Position was not saved", javax.swing.JOptionPane.ERROR_MESSAGE);
+	}
+
 	public ControlGUI() {
 		this.execControl = ExecutionController.getInstance();
+		this.setNextFrameName(DataHandler.getNextFrameName());
+		this.setNextJointPosName(DataHandler.getNextJointPosName());
+		if (java.awt.GraphicsEnvironment.isHeadless()) return;
 
 		JFrame guiFrame = new JFrame();
 		guiFrame.setLayout(new GridLayout(5, 2));
@@ -142,10 +150,8 @@ public class ControlGUI {
 		touchupJointPosButton.addActionListener(buttonListener);
 		guiFrame.add(touchupJointPosButton);
 
-		this.setNextFrameName(DataHandler.getNextFrameName());
 		frameField.setAlignmentX(0.5f);
 		guiFrame.add(frameField);
-		this.setNextJointPosName(DataHandler.getNextJointPosName());
 		jointposField.setAlignmentX(0.5f);
 		guiFrame.add(jointposField);
 

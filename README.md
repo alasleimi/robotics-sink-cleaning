@@ -22,6 +22,8 @@ Supported packages: **Windows x64**, **Intel Mac with macOS 13+**, and **Apple S
 
 ```sh
 uv run --locked scripts/run.py sim      # Open the iiwa starter scene
+uv run --locked scripts/run.py exercise 01  # Run original Exercise 1 in simulation
+uv run --locked scripts/run.py exercise 02  # Replay poses saved in Exercise 1
 uv run --locked scripts/run.py build    # Compile exercises and check SDK objects locally
 uv run --locked scripts/doctor.py --sim # Check a running simulator connection
 uv run --locked pytest -q               # Check the setup helpers
@@ -29,7 +31,9 @@ uv run --locked pytest -q               # Check the setup helpers
 
 `build` does not connect to the robot. In IntelliJ, open this folder as a Gradle project and select the JDK path recorded in `.tools/local.json`. Original exercise entry points still connect to the real robot; follow [Arne's lab instructions](docs/arne-exercises.md).
 
-**The Sunrise-to-simulator adapter is not implemented yet.** The simulator scene and connection are a starting point. They do not make the original exercise applications simulator-compatible. See [next tasks](docs/project.md) and [adapter design](docs/design.md).
+**Use `exercise 01` to start teaching.** It opens its own simulator and runs Arne's original Java entry point through the adapter. Save three frames (`F0`–`F2`) and joint positions (`J0`–`J2`) before Exercise 2. Simulation files live in `data/simulation`; the original hardware entry points keep using `data`.
+
+See the short [exercise guide](simulation/README.md) for teaching controls, prerequisites, supported API calls, and simulator limits. The adapter approximates motion planning and impedance; it does not reproduce the Sunrise controller. Exercises 3/4 and the wire-following part of 8 remain student TODOs.
 
 ## Where things belong
 

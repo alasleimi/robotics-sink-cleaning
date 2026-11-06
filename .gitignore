@@ -17,3 +17,4 @@ __pycache__/
 .DS_Store
 .env
 data/recordings/
+data/simulation/

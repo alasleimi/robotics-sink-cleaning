@@ -28,5 +28,36 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+// Simulation uses the genuine SDK classes, with controller calls intercepted only
+// in this separate runtime. Mockito/bridge code never enters the hardware build.
+sourceSets {
+    simulator {
+        java.srcDir 'simulation/java'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations.simulatorImplementation.extendsFrom(configurations.implementation)
+dependencies {
+    simulatorImplementation 'org.mockito:mockito-core:5.14.2'
+    simulatorImplementation 'com.google.code.gson:gson:2.11.0'
+}
+tasks.named('compileSimulatorJava') { options.release = 17 }
+tasks.register('simRun', JavaExec) {
+    dependsOn simulatorClasses
+    classpath = sourceSets.simulator.runtimeClasspath
+    mainClass = 'simproxy.Launcher'
+    args providers.gradleProperty('exercise').getOrElse('03')
+    systemProperty 'java.awt.headless', providers.gradleProperty('headless').getOrElse('false')
+    systemProperty 'robot.dataDir', providers.gradleProperty('dataDir').getOrElse('data/simulation')
+}
+tasks.register('simClasspath') {
+    dependsOn simulatorClasses
+    doLast {
+        file('.tools/simulator-classpath.txt').text = sourceSets.simulator.runtimeClasspath.asPath
+    }
 }
 

@@ -37,7 +37,7 @@ public class FileLogger extends Thread {
 		TRANSLATION,
 
 		/**
-		 * Current tcp orientation in deg [3 values].
+		 * Current tcp orientation in radians [A, B, C].
 		 */
 		ORIENTATION,
 
@@ -73,15 +73,15 @@ public class FileLogger extends Thread {
 		EXTERNAL_TCP_FORCES_TORQUES,
 	}
 
-	private boolean active = false;
+	private volatile boolean active = false;
 
-	private boolean finished = false;
+	private volatile boolean finished = false;
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
 	private String filename = null;
 
-	private Set<Fields> fieldsToWrite = new HashSet<Fields>();
+	private Set<Fields> fieldsToWrite = new LinkedHashSet<Fields>();
 
 	/**
 	 * Create a file logger with specified fields. If not set by setFilename(), the file name will be the time when

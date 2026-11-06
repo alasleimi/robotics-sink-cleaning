@@ -9,10 +9,19 @@ from common import ROOT, gradle, load_config, local_path
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["sim", "build", "doctor"])
+    parser.add_argument("command", choices=["sim", "exercise", "build", "doctor"])
+    parser.add_argument("exercise", nargs="?", choices=["01", "02", "03", "04", "05a", "05b", "06", "07", "08"])
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--fast", action="store_true", help="Run simulation without wall-clock pacing")
+    parser.add_argument("--data", help="Separate teaching directory (default data/simulation)")
     args = parser.parse_args()
     config = load_config()
-    if args.command == "build":
+    if args.command == "exercise":
+        if not args.exercise:
+            parser.error("Choose an exercise, e.g. exercise 01")
+        from sim_session import run_exercise
+        run_exercise(args.exercise, headless=args.headless, fast=args.fast, data=args.data)
+    elif args.command == "build":
         gradle(config, "classes", "run")
     elif args.command == "doctor":
         subprocess.run([sys.executable, str(ROOT / "scripts" / "doctor.py")], check=True, cwd=ROOT)

@@ -17,4 +17,18 @@ Checked locally on Windows x64:
 
 The workflow checked installation, Java compilation/SDK objects, Python imports, and tests on each platform. Mac simulator GUI/dynamics are not covered by that workflow.
 
-No hardware connection or motion was attempted. SDK object checks do not establish full KUKA native-library compatibility, and the Sunrise simulation adapter remains unimplemented. The starter scene has not been calibrated to the physical robot/tool/sink.
+No hardware connection or motion was attempted. SDK object checks do not establish full KUKA native-library compatibility, and the initial setup checks did not cover the adapter. The starter scene has not been calibrated to the physical robot/tool/sink.
+
+## Adapter validation — 6 November 2026
+
+Local Windows runs used the real CoppeliaSim/MuJoCo runtime, not a fake bridge:
+
+- Original Exercise 1 ran its front movement and zero-stiffness loop. Three actual poses were taught and saved through the same DataHandler methods as the GUI buttons. Original Exercise 2 loaded F0-F2/J0-J2 and replayed F0 successfully.
+- Every supplied exercise main completed, or ran a bounded number of iterations for intentional loops. Exercises 3/4 remain empty templates; Exercise 8 only implements its approach/start sequence.
+- Additional physical assertions covered world/tool-relative LIN, Cartesian and joint PTP, TCP/flange offset, motion batches, async completion/timeout, pause/resume/cancel, continuous blended motion, compliant displacement under applied force, force-break condition identity and logged state samples.
+- All Exercise 7 singular-posture motions completed. A taught `wireloop_start` supported the original Exercise 8 approach.
+- Seven teaching-file regressions passed: F0/J0 starts, numbering gaps, missing/malformed files, units, named redundancy and simulator joint-seed round-trips. Nine existing Python/setup/PGLfD tests also passed.
+- Unsupported controller calls fail explicitly; a non-loopback socket attempt was blocked inside the simulator JVM. Original exercise bodies, robot configuration and PGLfD files are unchanged.
+- The Java GUI launched without exceptions. Automated desktop clicking could not be checked because the computer-use helper failed to initialize (`failed to write kernel assets`); save methods and name-field updates were checked programmatically.
+
+The updated CI workflow runs Java/data tests and full simulator integration on Windows, Intel macOS and Apple Silicon macOS. Record its result below once available. Hardware and calibrated dynamics remain untested; see the simulator guide for the supported subset.

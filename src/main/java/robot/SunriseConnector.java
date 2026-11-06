@@ -76,6 +76,7 @@ public class SunriseConnector {
      * Creates a GUI that displays joint torques, tcp torques / forces and the tcp position
      */
     public static void createInfoGui() {
+        if (java.awt.GraphicsEnvironment.isHeadless()) return;
         if (infoGui == null) {
             infoGui = new InfoGUI();
         }

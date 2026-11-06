@@ -1,23 +1,15 @@
-# Simulator adapter
+# Adapter implementation
 
-## Requirement
+The hardware `main` source set still uses the course SDK. A separate `simulator` source set adds the launcher, Mockito instrumentation and Gson; these dependencies are absent from the hardware runtime.
 
-Keep the KUKA Sunrise API required by the course. Aim to run Arne's exercise bodies with minimal changes, selecting either the physical robot or CoppeliaSim. Arne said no simulator is supplied; this custom adapter is still to be built.
+`simproxy.Launcher` calls the original exercise main inside an intercepted `RoboticsAPIContext`. SDK Frame, JointPosition, Tool geometry, conditions and motion objects remain genuine SDK objects. Controller/device calls and Tool motion dispatch are redirected to an authenticated loopback HTTP bridge. Unsupported calls throw rather than returning dummy success or measurements. A Java 17 network guard also blocks non-loopback connections from this JVM.
 
-## Current evidence
+The Python bridge owns the ZeroMQ client and simulation clock on one thread. It serializes queued motions, performs IK and path interpolation, and sends setpoints to Lua callbacks. The Lua joint callback runs feedback at MuJoCo's physics step rate, including joint/Cartesian stiffness, damping, null-space posture and torque saturation. Sensor readings and saved demonstrations come from the actual physics state.
 
-Exercises create `RoboticsAPIContext` before calling `SunriseConnector`. `ExecutionController` calls Sunrise execution services directly. Swapping only the controller IP or connector is insufficient.
+Async blending overlaps adjacent trajectories with a smooth crossfade; a successor must already be queued. This approximates Sunrise blending. Position-control endpoints settle to a joint tolerance, whereas impedance motions can finish while displaced by an external load. Pause holds the current joint posture and freezes path time; cancellation stops the affected motion.
 
-The bundled SDK exposes overridable `Tool.move` and `moveAsync` methods. Intercepting these while retaining SDK geometry/motion objects is a candidate, not a demonstrated solution. Some `LBR` measurement methods are final, so a broad mock subclass is not sufficient.
+`DataHandler` starts empty teaching directories at F0/J0, validates names and values, writes atomically and reports missing prerequisites clearly. The default hardware data path remains `data`; the simulation launcher selects `data/simulation`. Named KUKA redundancy metadata round-trips in teaching files, but exact KUKA E1/status/turn-constrained planning is not emulated. Simulator frames instead store an explicit joint seed.
 
-## First proof
+See [usage, exercise coverage and limits](../simulation/README.md) and [validation](validation.md).
 
-Adapt shared startup and support code so `Task_02_BasicMotions` can send a PTP target to simulation while retaining `tool.move(BasicMotions.ptp(F0))`. Then add LIN, joint-state feedback, and explicit backend selection. Fail clearly on unsupported operations.
-
-Later features need separate validation: async queues/cancellation, blending, elbow/null-space choices, joint/Cartesian impedance, force break conditions, and hand-guiding. Run impedance feedback at the simulator's physics-step rate; Java can send targets and gains. A virtual force sensor is not identical to KUKA's external-force estimate.
-
-## Simulator
-
-CoppeliaSim 4.10.0 rev0 includes the iiwa 7 R800 model. Use its MuJoCo engine and ZeroMQ API. The starter scene is a model/environment baseline, not a calibrated digital copy of the lab setup. The exercise tool/TCP and sponge have not been added.
-
-Sources: [Java/ZeroMQ API](https://manual.coppeliarobotics.com/en/zmqRemoteApiOverview.htm), [joint callbacks](https://manual.coppeliarobotics.com/en/jointCallbackFunctions.htm), [IK](https://manual.coppeliarobotics.com/en/kinematics.htm), [force sensors](https://manual.coppeliarobotics.com/en/forceSensors.htm).
+Implementation references: [ZeroMQ API](https://manual.coppeliarobotics.com/en/zmqRemoteApiOverview.htm), [joint callbacks](https://manual.coppeliarobotics.com/en/jointCallbackFunctions.htm), [simIK](https://manual.coppeliarobotics.com/en/simIK.htm), [force sensors](https://manual.coppeliarobotics.com/en/forceSensors.htm). Installed 4.10.0 manuals were used to match the pinned runtime.
