@@ -8,6 +8,7 @@ dependencies = [
     "matplotlib>=3.10,<4",
     "robosuite==1.5.2",
     "mujoco==3.3.7",
+    "numba==0.61.2",
 ]
 
 [dependency-groups]

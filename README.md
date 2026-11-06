@@ -16,7 +16,7 @@ uv run --locked scripts/setup.py
 
 The same command installs robosuite, MuJoCo, Python dependencies and a local Java 17 JDK; the committed Gradle Wrapper supplies Gradle 8.14.3. Python packages and hashes are locked in `uv.lock`; JDK downloads are pinned in `tool-versions.json`. Running setup again reuses them. No separate simulator download, administrator rights or global PATH changes are needed.
 
-Supported targets: **Windows x64, Intel Mac and Apple Silicon Mac**. The launcher selects `mjpython` automatically for the Mac viewer. NumPy 1.26.4 is pinned for robosuite’s dependency compatibility; PGLfD stays in the same environment.
+Supported targets: **Windows x64, Intel Mac and Apple Silicon Mac**. The launcher selects `mjpython` automatically for the Mac viewer. NumPy 1.26.4 and Numba 0.61.2 are pinned for robosuite compatibility and Intel Mac binary packages; PGLfD stays in the same environment.
 
 ## Daily commands
 
