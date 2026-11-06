@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import json
+from http.client import HTTPConnection
 import math
 from pathlib import Path
 import time
+from urllib.parse import urlparse
 
 from sim_session import Session
 
@@ -23,6 +25,23 @@ def main():
         data = s.folder / "teaching"
         report = {"logs": str(s.folder), "checks": []}
         print(f"Integration logs: {s.folder}", flush=True)
+        endpoint = urlparse(s.auth["url"])
+        connection = HTTPConnection(endpoint.hostname, endpoint.port, timeout=10)
+        headers = {"Authorization": "Bearer " + s.auth["token"], "Content-Type": "application/json"}
+        try:
+            connection.request("POST", "/", json.dumps({"action": "state"}), headers)
+            first_state = json.load(connection.getresponse())
+            persistent_socket = connection.sock
+            assert persistent_socket is not None, "Bridge must support persistent connections"
+            time.sleep(.1)
+            assert s.call("state")["time"] > first_state["time"], "Idle HTTP connections must not freeze physics"
+            for _ in range(20):
+                connection.request("POST", "/", json.dumps({"action": "state"}), headers)
+                json.load(connection.getresponse())
+                assert connection.sock is persistent_socket
+        finally:
+            connection.close()
+        report["checks"].append("persistent HTTP connection; physics advances while idle")
 
         def complete(main, *args, label, timeout=120):
             p = s.java(main, *args, data=data, label=label)

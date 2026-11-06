@@ -4,11 +4,14 @@ from __future__ import annotations
 import argparse
 from collections import deque
 import copy
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from concurrent.futures import Future
 import json
 import math
 from pathlib import Path
 import secrets
+from queue import Queue, Empty
+import threading
 import time
 import traceback
 
@@ -395,11 +398,14 @@ def main():
     args = parser.parse_args()
     engine = Engine(Model(args.sim_port))
     token = secrets.token_urlsafe(32)
+    requests = Queue(maxsize=256)
 
     class Handler(BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+
         def setup(self):
             super().setup()
-            self.connection.settimeout(2)
+            self.connection.settimeout(10)
 
         def handle(self):
             try:
@@ -418,29 +424,47 @@ def main():
                 size = int(self.headers.get("Content-Length", 0))
                 if size <= 0 or size > 1_000_000:
                     raise ValueError("Invalid request size")
-                result = engine.request(json.loads(self.rfile.read(size)))
+                command = json.loads(self.rfile.read(size))
+                future = Future()
+                requests.put_nowait((command, future))
+                try:
+                    result = future.result(timeout=15)
+                except TimeoutError:
+                    future.cancel()
+                    raise TimeoutError("Simulation did not process the request")
                 payload = json.dumps(result, allow_nan=False).encode()
                 self.send_response(200)
             except Exception as exc:
+                self.close_connection = True
                 payload = json.dumps({"error": str(exc)}).encode()
                 self.send_response(400)
             self.send_header("Content-Type", "application/json")
-            self.send_header("Connection", "close")
+            self.send_header("Connection", "close" if self.close_connection else "keep-alive")
+            self.send_header("Keep-Alive", "timeout=5")
             self.send_header("Content-Length", str(len(payload)))
             self.end_headers()
             self.wfile.write(payload)
 
-    server = HTTPServer(("127.0.0.1", args.port), Handler)
-    server.timeout = .001
+    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    threading.Thread(target=server.serve_forever, kwargs={"poll_interval": .02}, daemon=True).start()
     args.session.parent.mkdir(parents=True, exist_ok=True)
     args.session.write_text(json.dumps({"url": f"http://127.0.0.1:{server.server_port}", "token": token}))
     print(f"Adapter ready on loopback port {server.server_port}", flush=True)
     try:
         while True:
             start = time.monotonic()
-            # HTTP handlers and physics share a thread: the ZeroMQ socket never migrates.
-            for _ in range(4):
-                server.handle_request()
+            # HTTP workers only enqueue requests. This thread alone owns ZeroMQ,
+            # the engine and physics; idle keep-alive connections cannot stop it.
+            for _ in range(64):
+                try:
+                    command, future = requests.get_nowait()
+                except Empty:
+                    break
+                if future.set_running_or_notify_cancel():
+                    try:
+                        future.set_result(engine.request(command))
+                    except Exception as exc:
+                        future.set_exception(exc)
             engine.tick()
             if not args.fast:
                 time.sleep(max(0., .02 - (time.monotonic()-start)))
@@ -448,6 +472,7 @@ def main():
         pass
     finally:
         engine.model.close()
+        server.shutdown()
         server.server_close()
         args.session.unlink(missing_ok=True)
 

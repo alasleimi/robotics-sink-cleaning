@@ -42,7 +42,6 @@ public final class Bridge {
       connection.setDoOutput(true);
       connection.setRequestProperty("Authorization", "Bearer " + token);
       connection.setRequestProperty("Content-Type", "application/json");
-      connection.setRequestProperty("Connection", "close");
       byte[] bytes = request.toString().getBytes(StandardCharsets.UTF_8);
       connection.setFixedLengthStreamingMode(bytes.length);
       try (java.io.OutputStream output = connection.getOutputStream()) {
@@ -61,9 +60,8 @@ public final class Bridge {
         throw new IllegalStateException("Simulator: " + result.get("error").getAsString());
       return result;
     } catch (java.io.IOException e) {
-      throw new IllegalStateException("Simulator bridge disconnected", e);
-    } finally {
       if (connection != null) connection.disconnect();
+      throw new IllegalStateException("Simulator bridge disconnected", e);
     }
   }
 
