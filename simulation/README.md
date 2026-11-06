@@ -6,16 +6,16 @@ From the repository root:
 uv run --locked scripts/run.py exercise 01
 ```
 
-This builds the simulator runtime, opens an owned CoppeliaSim instance, and calls Arne's unchanged exercise main. Close a Java control window, or press Ctrl+C in the terminal, to stop the session and its processes. Output is also saved in `.tools/sim-*/exercise.log`.
+This builds the simulator runtime, opens an owned robosuite/MuJoCo viewer, and calls Arne's unchanged exercise main. Close the viewer or a Java control window, or press Ctrl+C in the terminal, to stop the session and its processes. Output is also saved in `.tools/sim-*/exercise.log`.
 
 ## Teach first, then replay
 
 1. Start `exercise 01` and let the initial front movement finish.
-2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget** and move that dummy using CoppeliaSim's object translation/rotation controls.
+2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget** and select the green sphere in the MuJoCo viewer (double-click), then Ctrl + right-drag to translate it or Ctrl + left-drag to rotate it. Direct mouse forces on the arm are also available after releasing the teaching target.
 3. In Arne's **RobotControl**, press **SAVE_FRAME** and **SAVE_JOINT_POS**. The first names are **F0** and **J0**. Repeat at two other reachable poses to save F1/J1 and F2/J2.
 4. Close Exercise 1, then run `uv run --locked scripts/run.py exercise 02`.
 
-Saves contain the actual robot state, not the desired teaching target. Files persist between sessions in `data/simulation/frames` and `data/simulation/joint_positions`. Simulator frames also retain seven joint angles as an IK seed, so returning to a saved pose can recover its elbow posture.
+Saves contain the actual robot state, not the desired teaching target. Files persist between sessions in `data/simulation/robosuite/frames` and `data/simulation/robosuite/joint_positions`. Simulator frames also retain seven joint angles as an IK seed, so returning to a saved pose can recover its elbow posture.
 
 Existing files are never renumbered automatically. If old files start at F1/J1, explicitly teach and save F0/J0 using the name fields. Automatic naming continues after the largest existing numeric name. Entering an existing name deliberately replaces that file.
 
@@ -49,8 +49,18 @@ Use `--headless --fast` for automated runs, or `--data PATH` for a separate teac
 
 This is a custom adapter using genuine SDK motion/geometry objects. It is **not Sunrise.OS running inside a simulator**. Java 17 instrumentation is isolated from the hardware build; the simulator JVM also blocks non-loopback connections.
 
-The scene uses the bundled **iiwa 7 R800** model and MuJoCo. Runtime setup removes the model's automatic demonstration script, adds the configured 202 mm TCP, and uses the configured tool mass on a simple spherical contact body. The sink, sponge and wire course are not modeled. Link/tool dynamics and contact are not calibrated to the lab.
+The scene is a robosuite `CourseEnvironment` with its **iiwa7** model, a fixed base, and the course XML's 202 mm TCP, mass and centre of mass. The tool uses a sphere for contact and an approximate inertia tensor because the course XML supplies zero inertias. The sink, sponge and wire course are not modeled. Link/tool dynamics and contact are not calibrated to the lab.
 
-Joint and Cartesian feedback run at the physics step rate with gravity compensation. Damping, null-space behaviour and crossfaded blend paths are approximations. Tool forces come from a simulated flange sensor with static tool-weight correction; dynamic residuals and contact elsewhere on the arm differ from KUKA's external-force estimator. Joint external torques are estimated from that tool wrench.
+Joint and Cartesian feedback run every 2 ms through a robosuite controller extension. Unlike robosuite's acceleration gains, Sunrise stiffness is interpreted as N/m or Nm/rad. Damping uses the model's joint/task inertia; gravity/bias compensation and null-space projection use robosuite/MuJoCo dynamics. This remains an approximation of KUKA's controller. IK uses MuJoCo Jacobians with bounded numerical solving at joint limits; blended paths retain the custom planner.
+
+Tool forces come from a simulated flange sensor with static tool-weight correction; dynamic residuals and contact elsewhere on the arm differ from KUKA's external-force estimator. Joint external torques are estimated from that tool wrench. Mouse forces and panel forces act on the physical model.
 
 Saved simulator joint seeds preserve a demonstrated IK branch. Exact KUKA E1/status/turn constraints, custom moving destination frames, triggers, overlays, splines, and unimplemented controller/safety services fail explicitly. Do not interpret successful simulation as validation for physical motion. Real-robot execution still uses the original Sunrise entry points and lab procedure.
+
+## Python experiments
+
+The task in `simulation/adapter/environment.py` is a robosuite `ManipulationEnv` with `reset()` and `step(action)`; actions are seven absolute joint angles in radians. Its reward is zero: this is the exercise sandbox, not a completed sink-cleaning learning task. The Sunrise bridge uses the same model with its physical-unit impedance extension.
+
+## Migrating from CoppeliaSim
+
+Run setup again. CoppeliaSim, ZeroMQ and Lua are no longer required by the repository. The old local application may remain installed. Old `data/simulation/frames` and `joint_positions` are preserved; new teaching data goes under `data/simulation/robosuite` to avoid silently replaying poses from a different model. F0/J0 naming and the original file format are retained.

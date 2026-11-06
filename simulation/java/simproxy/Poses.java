@@ -3,7 +3,7 @@ package simproxy;
 import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.geometricModel.math.*;
 
-/** KUKA millimetres / rotation matrices <-> Coppelia metres / XYZW quaternions. */
+/** KUKA millimetres / rotation matrices <-> MuJoCo metres / XYZW quaternions. */
 final class Poses {
   static double[] pose(AbstractFrame f) {
     return pose(f.transformationFromWorld());

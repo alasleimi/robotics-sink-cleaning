@@ -11,7 +11,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import platform
 import subprocess
 import sys
 import tarfile
@@ -93,22 +92,15 @@ def main() -> None:
     manifest = json.loads((ROOT / "tool-versions.json").read_text(encoding="utf-8"))
     key = platform_key()
     target = manifest["platforms"][key]
-    if sys.platform == "darwin":
-        actual_major = int(platform.mac_ver()[0].split(".")[0])
-        if actual_major < target["minimum_macos"]:
-            raise RuntimeError(f"This CoppeliaSim build needs macOS {target['minimum_macos']}+. Your system reports {platform.mac_ver()[0]}.")
-    print(f"Preparing {key}: Python, Java, Gradle, CoppeliaSim Edu.", flush=True)
-    print("CoppeliaSim Edu is for educational use by students/teachers at schools and universities; see README.", flush=True)
+    print(f"Preparing {key}: Python, Java, Gradle, robosuite and MuJoCo.", flush=True)
     java = install(target["jdk"], "jdk", "java.exe" if os.name == "nt" else "java")
     java_home = java.parent.parent
-    simulator = install(target["coppeliasim"], "coppeliasim", "coppeliaSim.exe" if os.name == "nt" else "coppeliaSim")
-    resources = simulator.parent if os.name == "nt" else simulator.parent.parent / "Resources"
     config = {
         "platform": key,
         "java_home": java_home.relative_to(ROOT).as_posix(),
-        "simulator": simulator.relative_to(ROOT).as_posix(),
-        "simulator_resources": resources.relative_to(ROOT).as_posix(),
-        "coppeliasim_version": manifest["coppeliasim_version"],
+        "simulator_backend": "robosuite",
+        "robosuite_version": manifest["robosuite"],
+        "mujoco_version": manifest["mujoco"],
     }
     CONFIG.parent.mkdir(parents=True, exist_ok=True)
     CONFIG.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")

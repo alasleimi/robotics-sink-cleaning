@@ -28,7 +28,7 @@ jobs:
         run: uv run --locked pytest -q tests third_party/pglfd/python/tests/geom
       - name: Compile simulator adapter and test teaching files
         run: uv run --locked python scripts/check_java.py
-      - name: Run original exercises against CoppeliaSim physics
+      - name: Run original exercises against robosuite / MuJoCo physics
         run: uv run --locked scripts/check_simulation.py
       - name: Upload simulation logs
         if: always()

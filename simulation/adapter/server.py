@@ -1,4 +1,4 @@
-"""Authenticated loopback bridge. One thread owns ZeroMQ and the simulation clock."""
+"""Authenticated loopback bridge. One thread owns MuJoCo and the simulation clock."""
 from __future__ import annotations
 
 import argparse
@@ -139,7 +139,7 @@ class Engine:
                 target = self.model.call("forward", q1.tolist(), which)
             elif target is not None:
                 seed = spec.get("seed", q0.tolist())
-                q1 = np.array(self.model.inverse(target, seed, which, retry=kind != "lin"))
+                q1 = np.array(self.model.inverse(target, seed, which, retry=True))
             else:
                 raise ValueError("Motion has no target")
             velocity = spec.get("jointVelocity", .3)
@@ -315,7 +315,15 @@ class Engine:
                             # Impedance does not require reaching the target while externally displaced.
                             compliant = "control" in spec
                             joint_error = np.max(np.abs(np.array(self.state["q"])-entry["q1"]))
-                            if entry.get("blend", {}).get("started") or compliant or joint_error < .001:
+                            reached = joint_error < .001
+                            if entry["kind"] == "lin":
+                                # A redundant arm can reach the same pose on a
+                                # different joint solution than the endpoint IK
+                                # used to estimate duration. LIN settles on pose.
+                                actual = self.state[spec.get("which", "tcp")]
+                                reached = (np.linalg.norm(np.array(actual[:3])-entry["target"][:3]) < .001
+                                    and abs(np.dot(actual[3:], entry["target"][3:])) > math.cos(.005/2))
+                            if entry.get("blend", {}).get("started") or compliant or reached:
                                 self.finish(entry)
                             else:
                                 entry["settling"] += .02
@@ -373,7 +381,7 @@ class Engine:
         elif action == "teachTarget":
             if self.active and not all(x == 0 for x in self.active["spec"].get("control", {}).get("stiffness", [1])):
                 raise ValueError("Use scene teaching in Exercise 1 or abort active motion first")
-            self.model.sim.setObjectPose(self.model.targets["tcp"], self.state["tcp"], self.model.sim.handle_world)
+            self.model.set_target(self.state["tcp"])
             self.follow_target = True
         elif action == "releaseTeach":
             self.manual = None
@@ -392,11 +400,11 @@ class Engine:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=0)
-    parser.add_argument("--sim-port", type=int, default=23000)
+    parser.add_argument("--headless", action="store_true")
     parser.add_argument("--session", type=Path, default=ROOT / ".tools/adapter-session.json")
     parser.add_argument("--fast", action="store_true")
     args = parser.parse_args()
-    engine = Engine(Model(args.sim_port))
+    engine = Engine(Model(headless=args.headless))
     token = secrets.token_urlsafe(32)
     requests = Queue(maxsize=256)
 
@@ -451,9 +459,9 @@ def main():
     args.session.write_text(json.dumps({"url": f"http://127.0.0.1:{server.server_port}", "token": token}))
     print(f"Adapter ready on loopback port {server.server_port}", flush=True)
     try:
-        while True:
+        while engine.model.is_running():
             start = time.monotonic()
-            # HTTP workers only enqueue requests. This thread alone owns ZeroMQ,
+            # HTTP workers only enqueue requests. This thread alone owns MuJoCo,
             # the engine and physics; idle keep-alive connections cannot stop it.
             for _ in range(64):
                 try:

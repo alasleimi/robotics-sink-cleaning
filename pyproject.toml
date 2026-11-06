@@ -4,9 +4,10 @@ version = "0.1.0"
 description = "Course exercises and demonstration learning for the KUKA iiwa sink-cleaning project"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "numpy>=2.2,<3",
+    "numpy==1.26.4",
     "matplotlib>=3.10,<4",
-    "coppeliasim-zmqremoteapi-client>=2.0.4,<3",
+    "robosuite==1.5.2",
+    "mujoco==3.3.7",
 ]
 
 [dependency-groups]

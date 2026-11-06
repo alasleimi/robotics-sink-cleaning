@@ -13,7 +13,7 @@ def main() -> None:
     parser.add_argument("exercise", nargs="?", choices=["01", "02", "03", "04", "05a", "05b", "06", "07", "08"])
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--fast", action="store_true", help="Run simulation without wall-clock pacing")
-    parser.add_argument("--data", help="Separate teaching directory (default data/simulation)")
+    parser.add_argument("--data", help="Separate teaching directory (default data/simulation/robosuite)")
     args = parser.parse_args()
     config = load_config()
     if args.command == "exercise":
@@ -26,14 +26,18 @@ def main() -> None:
     elif args.command == "doctor":
         subprocess.run([sys.executable, str(ROOT / "scripts" / "doctor.py")], check=True, cwd=ROOT)
     else:
-        executable = local_path(config, "simulator")
-        resources = local_path(config, "simulator_resources")
-        scene = ROOT / "simulation" / "scenes" / "iiwa7.ttt"
-        if not scene.is_file():
-            raise RuntimeError(f"Starter scene missing: {scene}")
-        # This launches only the simulator. The original course applications are untouched.
-        subprocess.Popen([str(executable), "-f" + str(scene)], cwd=resources)
-        print("Opened CoppeliaSim with the iiwa 7 R800 starter scene.")
+        from sim_session import Session
+        import time
+        with Session(headless=args.headless, fast=args.fast, build=False) as session:
+            print(f"Robosuite iiwa7 ready. Logs: {session.folder}", flush=True)
+            try:
+                while session.bridge.poll() is None:
+                    time.sleep(.1)
+            except KeyboardInterrupt:
+                pass
+            if session.bridge.returncode not in (None, 0):
+                raise RuntimeError(f"Simulator stopped unexpectedly. Logs: {session.folder}")
+
 
 
 if __name__ == "__main__":

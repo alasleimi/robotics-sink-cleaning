@@ -9,7 +9,7 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Task | State | Next action |
 | --- | --- | --- |
 | Shared repository and repeatable setup | Implemented; validation recorded below | Canel clones after being invited |
-| Sunrise simulation adapter | Implemented for the exercise API subset; Windows physics tested | Use the simulation guide; exact Sunrise dynamics/E1 constraints are outside its scope |
+| Sunrise simulation adapter | Robosuite port implemented; full Windows exercise sequence passed | Check Windows/Mac CI; exact KUKA E1 remains unsupported |
 | Robot/API exercises | Original mains tested in simulation; student TODOs preserved | Teach F0-F2/J0-J2 in 01, then run 02; hardware execution remains untested |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
 | Demonstration recording | Simulator teaching saves and FileLogger tested | Agree on lab recording fields and setup |

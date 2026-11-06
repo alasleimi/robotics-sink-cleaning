@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-import socket
 import subprocess
 import sys
 import tempfile
@@ -23,20 +22,20 @@ class Session:
         self.logs = []
         self.folder = Path(tempfile.mkdtemp(prefix="sim-", dir=ROOT / ".tools"))
         self.session_file = self.folder / "session.json"
-        with socket.socket() as sock:
-            sock.bind(("127.0.0.1", 0))
-            port = sock.getsockname()[1]
-        env = dict(os.environ, COPPELIASIM_USER_SETTINGS_FOLDER_SUFFIX="-sink-adapter")
-        sim_args = [str(local_path(self.config, "simulator")), f"-GzmqRemoteApi.rpcPort={port}", "-GpreferredSandboxLang=lua", f"-Gpython={sys.executable}", "-vscriptinfos"]
-        if headless:
-            sim_args.append("-h")
         try:
-            self.start(sim_args, "coppelia", cwd=local_path(self.config, "simulator_resources"), env=env, hidden=headless)
-            bridge_args = [sys.executable, str(ROOT / "simulation/adapter/server.py"), "--sim-port", str(port), "--session", str(self.session_file)]
+            # macOS requires MuJoCo's launcher for a passive GUI viewer.
+            python = Path(sys.executable)
+            if sys.platform == "darwin" and not headless:
+                python = python.with_name("mjpython")
+                if not python.is_file():
+                    raise RuntimeError("MuJoCo viewer launcher missing; run setup again.")
+            bridge_args = [str(python), str(ROOT / "simulation/adapter/server.py"), "--session", str(self.session_file)]
             if fast:
                 bridge_args.append("--fast")
-            self.start(bridge_args, "bridge")
-            deadline = time.monotonic() + 60
+            if headless:
+                bridge_args.append("--headless")
+            self.bridge = self.start(bridge_args, "bridge")
+            deadline = time.monotonic() + 120
             while not self.session_file.exists():
                 if any(p.poll() is not None for p in self.processes):
                     raise RuntimeError(f"Simulator startup failed (exit codes {[p.poll() for p in self.processes]}). Logs: {self.folder}")
@@ -68,7 +67,7 @@ class Session:
         java = local_path(self.config, "java_home") / "bin" / ("java.exe" if os.name == "nt" else "java")
         classpath = (ROOT / ".tools/simulator-classpath.txt").read_text()
         return self.start([str(java), f"-Djava.awt.headless={str(headless).lower()}",
-            f"-Drobot.dataDir={data or ROOT / 'data/simulation'}", f"-Dsim.session={self.session_file}",
+            f"-Drobot.dataDir={data or ROOT / 'data/simulation/robosuite'}", f"-Dsim.session={self.session_file}",
             "-cp", classpath, main, *args], label, hidden=headless)
 
     def close(self):
@@ -100,12 +99,17 @@ def run_exercise(exercise, *, headless=False, fast=False, data=None):
         try:
             with (session.folder / "exercise.log").open(encoding="utf-8", errors="replace") as output:
                 while process.poll() is None:
+                    if session.bridge.poll() is not None:
+                        process.terminate()
+                        break
                     text = output.read()
                     if text:
                         print(text, end="", flush=True)
                     time.sleep(.1)
                 print(output.read(), end="", flush=True)
             result = process.returncode
+            if session.bridge.poll() == 0:
+                result = 0  # Closing the viewer is an ordinary session exit.
         except KeyboardInterrupt:
             result = 130
         if result not in (0, 130):

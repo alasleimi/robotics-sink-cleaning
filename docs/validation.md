@@ -1,6 +1,11 @@
-# Setup validation
+# Validation history
 
-## 6 November 2026
+## Robosuite port — 6 November 2026
+
+Robosuite 1.5.2, MuJoCo 3.3.7 and NumPy 1.26.4 are installed through the locked uv environment. Setup/SDK checks and Java teaching-file checks passed on Windows. Fifteen Python checks cover setup/PGLfD plus actual model Jacobians, saved-pose IK, joint-limit sweeps, compliant force response, Cartesian stiffness, teaching target mapping and the robosuite reset/step interface. The native Windows viewer opened and closed successfully; its rendered scene was visually inspected. The full original exercise sequence and Java motion/force/logging assertions passed locally (`.tools/sim-jppzq3ok/report.json`), including Exercise 1 saving F0–F2/J0–J2, Exercise 2 replay, Exercise 6 force break and Exercise 7 singular postures. Exercises 3/4 remain student scaffolds and 8 covers its supplied approach. Cross-platform CI is pending. Hardware has not been connected.
+
+
+## Previous CoppeliaSim setup — 6 November 2026
 
 Checked locally on Windows x64:
 

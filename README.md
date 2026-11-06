@@ -2,7 +2,7 @@
 
 Shared project for Ala and Canel: complete the course exercises, record demonstrations, and learn sink-cleaning movements.
 
-**Robot:** LBR iiwa 7 R800, Sunrise.OS 1.16.1.9. **Simulator:** CoppeliaSim Edu 4.10.0 rev0, with MuJoCo selected in the starter scene.
+**Robot:** LBR iiwa 7 R800, Sunrise.OS 1.16.1.9. **Simulator:** robosuite 1.5.2 with MuJoCo 3.3.7 and its iiwa7 model.
 
 ## Setup
 
@@ -14,26 +14,28 @@ cd robotics-sink-cleaning
 uv run --locked scripts/setup.py
 ```
 
-The same command installs Python dependencies, a local Java 17 JDK, and CoppeliaSim; the committed Gradle Wrapper supplies Gradle 8.14.3. Downloads are pinned by SHA-256 in `tool-versions.json`. Running setup again reuses them. Nothing needs administrator rights or global Java/PATH changes.
+The same command installs robosuite, MuJoCo, Python dependencies and a local Java 17 JDK; the committed Gradle Wrapper supplies Gradle 8.14.3. Python packages and hashes are locked in `uv.lock`; JDK downloads are pinned in `tool-versions.json`. Running setup again reuses them. No separate simulator download, administrator rights or global PATH changes are needed.
 
-Supported packages: **Windows x64**, **Intel Mac with macOS 13+**, and **Apple Silicon Mac with macOS 15+**. On macOS, first launch may require the normal system approval for a downloaded application. CoppeliaSim Edu is for educational use by students and teachers at schools/universities, not commercial use; see [the publisher's terms](https://www.coppeliarobotics.com/#download).
+Supported targets: **Windows x64, Intel Mac and Apple Silicon Mac**. The launcher selects `mjpython` automatically for the Mac viewer. NumPy 1.26.4 is pinned for robosuite�s dependency compatibility; PGLfD stays in the same environment.
 
 ## Daily commands
 
 ```sh
-uv run --locked scripts/run.py sim      # Open the iiwa starter scene
+uv run --locked scripts/run.py sim      # Open the robosuite iiwa7 viewer
 uv run --locked scripts/run.py exercise 01  # Run original Exercise 1 in simulation
 uv run --locked scripts/run.py exercise 02  # Replay poses saved in Exercise 1
 uv run --locked scripts/run.py build    # Compile exercises and check SDK objects locally
-uv run --locked scripts/doctor.py --sim # Check a running simulator connection
+uv run --locked scripts/doctor.py --sim # Run an isolated physics check
 uv run --locked pytest -q               # Check the setup helpers
 ```
 
 `build` does not connect to the robot. In IntelliJ, open this folder as a Gradle project and select the JDK path recorded in `.tools/local.json`. Original exercise entry points still connect to the real robot; follow [Arne's lab instructions](docs/arne-exercises.md).
 
-**Use `exercise 01` to start teaching.** It opens its own simulator and runs Arne's original Java entry point through the adapter. Save three frames (`F0`–`F2`) and joint positions (`J0`–`J2`) before Exercise 2. Simulation files live in `data/simulation`; the original hardware entry points keep using `data`.
+**Use `exercise 01` to start teaching.** It opens its own simulator and runs Arne's original Java entry point through the adapter. Save three frames (`F0`–`F2`) and joint positions (`J0`–`J2`) before Exercise 2. Simulation files live in `data/simulation/robosuite`; the original hardware entry points keep using `data`.
 
 See the short [exercise guide](simulation/README.md) for teaching controls, prerequisites, supported API calls, and simulator limits. The adapter approximates motion planning and impedance; it does not reproduce the Sunrise controller. Exercises 3/4 and the wire-following part of 8 remain student TODOs.
+
+Existing CoppeliaSim recordings remain in their previous directory. Re-teach poses for the new model; they are not automatically imported as equivalent robosuite poses.
 
 ## Where things belong
 
@@ -43,7 +45,7 @@ See the short [exercise guide](simulation/README.md) for teaching controls, prer
 | `src/main/java/sinkcleaning` | Our Java project code and local setup check |
 | `learning/sinkcleaning` | Our Python learning code |
 | `third_party/pglfd` | Unmodified Moodle snapshot; import as `pglfd` |
-| `simulation` | Starter scene and simulation documentation |
+| `simulation` | Robosuite task, physics adapter, Java bridge and run guide |
 | `docs` | Project notes, tasks, robot configuration facts |
 | `data` | Data format notes and small examples |
 | `.tools`, `.venv` | Local installations; ignored by Git |

@@ -1,15 +1,15 @@
-# Adapter implementation
+# Simulator architecture
 
-The hardware `main` source set still uses the course SDK. A separate `simulator` source set adds the launcher, Mockito instrumentation and Gson; these dependencies are absent from the hardware runtime.
+Original Java exercises run through the separate `simulation/java` runtime using genuine KUKA motion/geometry objects. Java 17 instrumentation intercepts hardware calls; the simulator JVM blocks non-loopback connections. The original hardware source set and course configuration remain separate.
 
-`simproxy.Launcher` calls the original exercise main inside an intercepted `RoboticsAPIContext`. SDK Frame, JointPosition, Tool geometry, conditions and motion objects remain genuine SDK objects. Controller/device calls and Tool motion dispatch are redirected to an authenticated loopback HTTP bridge. Unsupported calls throw rather than returning dummy success or measurements. A Java 17 network guard also blocks non-loopback connections from this JVM.
+An authenticated loopback HTTP bridge queues requests to one physics thread. That thread owns robosuite's `CourseEnvironment`, the MuJoCo model/data, trajectory queue and optional native viewer. Closing the viewer closes the session. macOS GUI sessions use `mjpython`; headless tests use normal Python.
 
-The Python bridge owns the ZeroMQ client and simulation clock on one thread. It serializes queued motions, performs IK and path interpolation, and sends setpoints to Lua callbacks. The Lua joint callback runs feedback at MuJoCo's physics step rate, including joint/Cartesian stiffness, damping, null-space posture and torque saturation. Sensor readings and saved demonstrations come from the actual physics state.
+`CourseEnvironment` composes robosuite's iiwa7, NullMount and a custom course tool from `RoboticsAPI.data.xml`. The Python task can also be used through robosuite's reset/step interface. The Java bridge supplies PTP/LIN/relative trajectories, queues, approximate blending, pause/cancel and force break conditions.
 
-Async blending overlaps adjacent trajectories with a smooth crossfade; a successor must already be queued. This approximates Sunrise blending. Position-control endpoints settle to a joint tolerance, whereas impedance motions can finish while displaced by an external load. Pause holds the current joint posture and freezes path time; cancellation stops the affected motion.
+The controller extends robosuite's joint-position controller state/dynamics interface. Its physical-unit springs preserve the meaning of Sunrise stiffness (N/m, Nm/rad), unlike directly copying those numbers into acceleration-based robosuite gains. Damping uses model inertia; Cartesian null-space projection uses robosuite's operational-space matrices. Feedback runs at 500 Hz. Flange force/torque sensors include static tool-weight compensation. This is not KUKA's proprietary controller.
 
-`DataHandler` starts empty teaching directories at F0/J0, validates names and values, writes atomically and reports missing prerequisites clearly. The default hardware data path remains `data`; the simulation launcher selects `data/simulation`. Named KUKA redundancy metadata round-trips in teaching files, but exact KUKA E1/status/turn-constrained planning is not emulated. Simulator frames instead store an explicit joint seed.
+Numerical IK uses MuJoCo Jacobians and a bounded least-squares fallback at joint limits. Saved joint seeds retain taught posture; exact KUKA E1/status/turn constraints still fail explicitly. Pose units at the Java boundary remain mm/radians; `.frm` files store XYZ mm/ABC degrees and `.jnt` files store radians.
 
-See [usage, exercise coverage and limits](../simulation/README.md) and [validation](validation.md).
+Teaching data defaults to `data/simulation/robosuite`; hardware still uses `data`. Existing CoppeliaSim data is preserved separately. F0/J0 numbering, persistence and validation are unchanged.
 
-Implementation references: [ZeroMQ API](https://manual.coppeliarobotics.com/en/zmqRemoteApiOverview.htm), [joint callbacks](https://manual.coppeliarobotics.com/en/jointCallbackFunctions.htm), [simIK](https://manual.coppeliarobotics.com/en/simIK.htm), [force sensors](https://manual.coppeliarobotics.com/en/forceSensors.htm). Installed 4.10.0 manuals were used to match the pinned runtime.
+See [exercise coverage and limitations](../simulation/README.md) and [validation](validation.md). Implementation references: [robosuite controllers](https://robosuite.ai/docs/modules/controllers.html), [MuJoCo Python/viewer](https://mujoco.readthedocs.io/en/3.3.7/python.html), [robosuite source](https://github.com/ARISE-Initiative/robosuite/tree/v1.5.2).
