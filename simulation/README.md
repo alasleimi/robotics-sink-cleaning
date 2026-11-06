@@ -33,7 +33,7 @@ Existing files are never renumbered automatically. If old files start at F1/J1, 
 | 07 | All supplied joint motions through singular configurations | Uses joint motion, including at singular poses |
 | 08 | Move up, approach, and LIN to taught start | Teach a frame named `wireloop_start` in 01 first; wire-following remains a TODO |
 
-Exercises 01, 05a, 05b, and 06 intentionally loop until the session is closed. Completing the adapter does not complete the student exercises.
+Exercises 01, 05a, 05b, and 06 intentionally loop until the session is closed. PAUSE also freezes teaching controls. ABORT cancels the queue and stays paused until RESUME. Completing the adapter does not complete the student exercises.
 
 ## Supported subset
 
