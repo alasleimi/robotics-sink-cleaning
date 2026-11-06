@@ -10,7 +10,7 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | --- | --- | --- |
 | Shared repository and repeatable setup | Implemented; validation recorded below | Canel clones after being invited |
 | Sunrise simulation adapter | E1, taught redundancy, force fixes and wire fixture implemented; full Windows/Intel Mac/Apple Silicon CI passed | Re-teach in the corrected flange convention; see `simulation/README.md` |
-| Robot/API exercises | Original mains tested in simulation; student TODOs preserved | Teach F0-F2/J0-J2 in 01, then run 02; hardware execution remains untested |
+| Robot/API exercises | Completed temporary solutions tested on Windows, including force-guided wire traversal; all templates restored byte-for-byte | Teach F0-F2/J0-J2 in 01, then work through the restored exercises; see `validation.md` |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
 | Demonstration recording | Simulator teaching saves and FileLogger tested | Agree on lab recording fields and setup |
 | PushWiper/adaptive wiping | Reading pending | Summarise their inputs, outputs, and feedback |

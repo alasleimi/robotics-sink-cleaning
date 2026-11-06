@@ -1,5 +1,19 @@
 # Validation history
 
+## Completed exercise rehearsal — 6 November 2026
+
+Temporarily completed the actual Exercise 2/3/4/8 Java sources and ran their original entry points through the adapter on Windows. Exercises 1, 5a, 5b, 6 and 7 already contain runnable implementations and were exercised directly. This goes beyond launching empty student scaffolds.
+
+- **1 → 2:** taught and saved F0–F2/J0–J2 in an isolated data directory, then used those files for joint/frame PTP, asynchronous blending, LIN, tool-relative LIN and a motion batch. Verified endpoints and a moving blend handoff.
+- **3:** restored a taught elbow configuration, changed E1 at the same TCP, then restored the saved E1 with LIN.
+- **4:** executed all three requested blended batches (joint PTP, frame PTP, frame LIN). Each produced finite, nonzero translation, rotation and joint-distance logs and reached its final frame.
+- **5a/5b:** applied external force during the actual exercise loops; checked physical displacement and return after releasing it. **6:** its 10 N force condition fired at 12 N. **7:** all nine supplied joint motions completed, including singular postures.
+- **8:** the temporary solution used two force probes per step to find the wire centre, without reading fixture coordinates. It followed a bounded 280 mm horizontal section through every horizontal bend: 56 steps, 112 physical-contact breaks, maximum lateral centre error **0.89 mm**. This does not cover traversing the fixture's vertical end/support. The initial relative-step solution accumulated drift; using fixed height/progress targets and recentering corrected it. No adapter changes were needed.
+
+All **nine exercise files were restored byte-for-byte**, verified against their pre-edit SHA-256 hashes and Git. The restored sources were recompiled so temporary solved bytecode is no longer active. `uv run --locked scripts/check_java.py` passed afterward. Student TODOs remain available to Ala and Canel; existing teaching files and hardware configuration were untouched.
+
+Local evidence: `.tools/exercise-rehearsal/report-core.json`, `report-wire.json`, trace files, and `original-sha256.json`; process logs in `.tools/sim-ha0806f5` and `.tools/sim-b8bhm7qx`. Temporary solutions stay in that ignored rehearsal directory, outside the active source tree. This rehearsal was local Windows simulation, not a hardware or cross-platform run. Coverage follows the supplied source/comments; the referenced `practical.pdf` remains unavailable.
+
 ## E1 and exercise requirements — 6 November 2026
 
 Implemented E1-constrained IK/PTP/LIN, Status handling, partial redundancy persistence, and measured/FK frame metadata. The model's flange now matches Arne's independent kinematics (zero, front, and 30 varied joint configurations). New teaching files use `data/simulation/robosuite-sunrise`; earlier recordings remain untouched.
