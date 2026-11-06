@@ -83,6 +83,7 @@ def main():
             complete("simproxy.Launcher", number, label=f"exercise-{number}-scaffold")
         for number in ("05a", "05b", "06"):
             s.call("abort")
+            s.call("resume")
             baseline = len(events())
             p = s.java("simproxy.Launcher", number, data=data, label=f"exercise-{number}")
             try:
