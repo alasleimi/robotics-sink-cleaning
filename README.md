@@ -1,29 +1,60 @@
-# Robot Programming and Control for Human Interaction
+# Sink cleaning with the KUKA iiwa
 
-Clone this repository for the practial part of the lecture _Robot Programming and Control for Human Interaction_ (IN2308). 
-The file practical.pdf contains the exercises you need to implement during the course.
+Shared project for Ala and Canel: complete the course exercises, record demonstrations, and learn sink-cleaning movements.
 
-What you need:
-- a computer with ethernet port, WiFi is not enough to connect to the robot
-- IntelliJ
+**Robot:** LBR iiwa 7 R800, Sunrise.OS 1.16.1.9. **Simulator:** CoppeliaSim Edu 4.10.0 rev0, with MuJoCo selected in the starter scene.
 
-Simply open the cloned folder in IntelliJ. It should automatically do the gradle import. If not: right click on `build.gradle` and select `Import Gradle Project`.
+## Setup
 
-## Important: Safety
+Install [Git](https://git-scm.com/downloads) and [uv](https://docs.astral.sh/uv/getting-started/installation/) once, then:
 
-We give you a safety introduction on the first appointment. Make sure to sign the confirmation that you got the introuction before working on the robot. This is very important for insurance issues!
-If you didn't the very first appointment talk to us to give you the safety intro!
+```sh
+git clone https://github.com/alasleimi/robotics-sink-cleaning.git
+cd robotics-sink-cleaning
+uv run --locked scripts/setup.py
+```
 
-When you work on the robot work in T1 mode. Once you are sure everything works we can move faster. Talk to us (Max or Arne) to change the mode. 
+The same command installs Python dependencies, a local Java 17 JDK, and CoppeliaSim; the committed Gradle Wrapper supplies Gradle 8.14.3. Downloads are pinned by SHA-256 in `tool-versions.json`. Running setup again reuses them. Nothing needs administrator rights or global Java/PATH changes.
 
-## Static IP Setting
-One person of each group will connect their computer to the robot controller. On that computer you will need to set up a static IP, there is no DHCP in the network!
+Supported packages: **Windows x64**, **Intel Mac with macOS 13+**, and **Apple Silicon Mac with macOS 15+**. On macOS, first launch may require the normal system approval for a downloaded application. CoppeliaSim Edu is for educational use by students and teachers at schools/universities, not commercial use; see [the publisher's terms](https://www.coppeliarobotics.com/#download).
 
-Set up a __static ip__ on the network interface connected to the robot. The settings are:
-- Subnetmask: `255.255.255.0`
-- Robot IP: `172.31.1.147`
-- Your IP: `172.31.1.x`, where `x` is __not__ `147`
+## Daily commands
 
-## Important
+```sh
+uv run --locked scripts/run.py sim      # Open the iiwa starter scene
+uv run --locked scripts/run.py build    # Compile exercises and check SDK objects locally
+uv run --locked scripts/doctor.py --sim # Check a running simulator connection
+uv run --locked pytest -q               # Check the setup helpers
+```
 
-Be always sure that you know what you do before executing code on the robot. If not talk to Max or Arne before executing it!
+`build` does not connect to the robot. In IntelliJ, open this folder as a Gradle project and select the JDK path recorded in `.tools/local.json`. Original exercise entry points still connect to the real robot; follow [Arne's lab instructions](docs/arne-exercises.md).
+
+**The Sunrise-to-simulator adapter is not implemented yet.** The simulator scene and connection are a starting point. They do not make the original exercise applications simulator-compatible. See [next tasks](docs/project.md) and [adapter design](docs/design.md).
+
+## Where things belong
+
+| Folder | Contents |
+| --- | --- |
+| `src/main/java/exercises`, `robot`, `utility` | Arne's exercises and support code |
+| `src/main/java/sinkcleaning` | Our Java project code and local setup check |
+| `learning/sinkcleaning` | Our Python learning code |
+| `third_party/pglfd` | Unmodified Moodle snapshot; import as `pglfd` |
+| `simulation` | Starter scene and simulation documentation |
+| `docs` | Project notes, tasks, robot configuration facts |
+| `data` | Data format notes and small examples |
+| `.tools`, `.venv` | Local installations; ignored by Git |
+
+Keep large demonstration recordings in `data/recordings/` (ignored) until we choose shared storage. Personal planning is outside this repository.
+
+## Working together
+
+Both teammates clone this private repo. Use short task branches, then merge working changes into `main`. Canel still needs a repository invitation once her GitHub username is known.
+
+Arne's history is retained. To fetch his future changes, add the upstream remote on a new clone:
+
+```sh
+git remote add upstream https://gitlab.lrz.de/arne/iiwa-exercises.git
+git fetch upstream
+```
+
+See [source provenance](docs/sources.md). The course's bundled KUKA SDK stays under its original terms; this project does not grant a new licence for it.

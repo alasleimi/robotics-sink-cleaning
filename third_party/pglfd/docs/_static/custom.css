@@ -1,0 +1,35 @@
+/* Space between the image and its caption */
+figure img {
+    margin-bottom: 0.75em;
+}
+
+/* Space around the caption itself */
+figcaption,
+.caption {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+/* Any heading starts below floated figures */
+h1, h2, h3, h4, h5, h6 {
+    clear: both;
+}
+
+/* Citations without bullet (for projects page) */
+.no-bullet ol, .no-bullet ul {
+    list-style-type: none !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    margin-top: -1em !important;
+    margin-left: 0 !important;
+}
+
+.no-bullet li {
+    list-style-type: none !important;
+}
+
+/* Custom equation positioning for RTD theme */
+.eqno {
+    float: right;
+}

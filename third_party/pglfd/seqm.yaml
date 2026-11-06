@@ -1,0 +1,26 @@
+---
+- type: DLR SE QM project file
+- seqm_version: 1.1
+- project_name: pglfd
+- seqmedit_version: 1.5.0
+- howto: 'wanna create such a cool file? see https://wiki.robotic.dlr.de/seqm.yaml (at RM) or https://gitlab.dlr.de/se-network/se-qm-edit'
+- recommendations:
+    - eaa10:
+        - state: done
+    - eaem01:
+        - state: done
+    - eaem02:
+        - state: done
+    - eaem03:
+        - state: done
+    - eaem05:
+        - state: done
+    - eaem07:
+        - state: done
+    - eqa01:
+        - state: done
+    - eqa02:
+        - state: done
+    - est10:
+        - state: done
+- application_class: 0

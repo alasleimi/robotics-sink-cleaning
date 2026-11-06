@@ -1,0 +1,3 @@
+[tool.ruff]
+# Shorter lines for documentation
+line-length = 88

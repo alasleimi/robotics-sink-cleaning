@@ -1,0 +1,6 @@
+.. _patents:
+
+Patents
+============
+
+TODO

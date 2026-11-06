@@ -1,0 +1,37 @@
+@Library('rmc-jenkins-libraries-v3') _
+env.OPENBLAS_NUM_THREADS='10'
+
+// check formatting
+node('default') {
+    def context = conan.init()
+    stage('check formatting') {
+        context.getGitRepo().checkout()
+        sshagent(credentials: [context.getConfig().gitCredentialsId]) {
+            sh """
+            cd repo_dir
+            make check-codestyle
+            """
+        }
+    }
+}
+
+rmcBuild.auto()
+
+// build docs
+node('default') {
+    def context = conan.init()
+    stage('create documentation') {
+        context.getGitRepo().checkout()
+        sshagent(credentials: [context.getConfig().gitCredentialsId]) {
+            lock("gh-pages-${context.getGitRepo().getOrganization()}-${context.getGitRepo().getName()}") {
+                context.withArtifactoryEnv {
+                    sh """
+                    export PYTHONPATH=${pwd()}/repo_dir
+                    cd repo_dir
+                    make gh-pages
+                    """
+                }
+            }
+        }
+    }
+}

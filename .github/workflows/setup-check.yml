@@ -1,0 +1,28 @@
+name: Setup checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.8"
+      - name: Install pinned tools and check Python/Java
+        run: uv run --locked scripts/setup.py
+      - name: Check setup helpers and PGLfD geometry
+        run: uv run --locked pytest -q tests third_party/pglfd/python/tests/geom

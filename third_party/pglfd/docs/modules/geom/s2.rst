@@ -1,0 +1,36 @@
+.. _s2:
+  
+S2
+==
+.. automodule:: pglfd.geom.s2
+
+
+Basic Functions
+---------------
+.. autofunction:: vector2axis_angle
+.. autofunction:: normalize
+.. autofunction:: multiply
+.. autofunction:: inverse
+
+Manifold Functions
+------------------
+.. autofunction:: log
+.. autofunction:: exp
+.. autofunction:: parallel_transport
+
+C++ API
+-------
+.. doxygenclass:: pglfd::S2
+   :members:
+
+Matlab API
+----------
+.. mat:currentmodule:: lib
+.. mat:automodule:: pglfd.geom.s2
+.. mat:autofunction:: pglfd.geom.s2.vector_to_axis_angle
+.. mat:autofunction:: pglfd.geom.s2.multiply
+.. mat:autofunction:: pglfd.geom.s2.inverse
+
+.. mat:autofunction:: pglfd.geom.s2.log
+.. mat:autofunction:: pglfd.geom.s2.exp
+.. mat:autofunction:: pglfd.geom.s2.parallel_transport

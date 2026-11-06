@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "python": "3.12.12",
+  "gradle": {
+    "sha256": "bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531",
+    "version": "8.14.3"
+  },
+  "coppeliasim_version": "4.10.0 rev0",
+  "platforms": {
+    "windows-x64": {
+      "coppeliasim": {
+        "sha256": "fd265fdabeddef7e9586501dfc9937251a59e990804e728948ed79cab96cd474",
+        "url": "https://downloads.coppeliarobotics.com/V4_10_0_rev0/CoppeliaSim_Edu_V4_10_0_rev0_Win.zip",
+        "filename": "CoppeliaSim_Edu_V4_10_0_rev0_Win.zip"
+      },
+      "jdk": {
+        "sha256": "e53a79c3c3d86865bd7e787903884331068e71321714ffd44f145785affc7cb0",
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.zip",
+        "filename": "OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.zip",
+        "version": "17.0.20+101"
+      }
+    },
+    "mac-x64": {
+      "minimum_macos": 13,
+      "jdk": {
+        "sha256": "868f5c672b3389fdbe48e44f94ae170f01668b1401360944fc7159d7cc9772cc",
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_x64_mac_hotspot_17.0.21_9.tar.gz",
+        "filename": "OpenJDK17U-jdk_x64_mac_hotspot_17.0.21_9.tar.gz",
+        "version": "17.0.21+9"
+      },
+      "coppeliasim": {
+        "sha256": "0f4f10c82e279a41e5bc7d971869638c6b2c413e0c817f2e401952dacf440732",
+        "url": "https://downloads.coppeliarobotics.com/V4_10_0_rev0/CoppeliaSim_Edu_V4_10_0_rev0_macOS13_x86_64.zip",
+        "filename": "CoppeliaSim_Edu_V4_10_0_rev0_macOS13_x86_64.zip"
+      }
+    },
+    "mac-arm64": {
+      "minimum_macos": 15,
+      "jdk": {
+        "sha256": "78b08c7f5a0598242d5719c022e19479cb4a3aa45c37c19726a757a469ed1c15",
+        "url": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz",
+        "filename": "OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.21_9.tar.gz",
+        "version": "17.0.21+9"
+      },
+      "coppeliasim": {
+        "sha256": "8cbd5ea36de7ea817a86cc9ee022ca54b4d1590d6aeec79ffd97559aae293ba0",
+        "url": "https://downloads.coppeliarobotics.com/V4_10_0_rev0/CoppeliaSim_Edu_V4_10_0_rev0_macOS15_arm64.zip",
+        "filename": "CoppeliaSim_Edu_V4_10_0_rev0_macOS15_arm64.zip"
+      }
+    }
+  }
+}

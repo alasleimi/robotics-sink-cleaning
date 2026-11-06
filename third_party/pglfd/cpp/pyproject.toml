@@ -1,0 +1,21 @@
+[tool.ruff]
+line-length = 127
+# Assume Python 3.12
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D", "N802", "N803", "COM812",
+    "INP001", # implicit namespaces
+    "ANN401", # dynamic typing
+    "PLR0913", # too many arguments
+    "TD002", "TD003", "TD004", # TODOS
+    "PTH118", "PTH123", # path
+]
+
+[tool.mypy]
+disable_error_code = ["import-not-found"]
+ignore_missing_imports = true
+follow_imports = "silent"
+show_error_codes = true

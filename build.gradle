@@ -6,6 +6,17 @@ plugins {
 group 'iiwa-exercises'
 version '1.0-SNAPSHOT'
 
+// Setup provisions Java 17; retain Java 8 bytecode compatibility for the course SDK.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 8
+    options.encoding = 'UTF-8'
+}
+
+application {
+    // The default run checks SDK objects locally; it never connects to a robot.
+    mainClass = 'sinkcleaning.SetupCheck'
+}
+
 repositories {
     mavenCentral()
 }

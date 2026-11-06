@@ -1,0 +1,12 @@
+.idea
+.coverage
+conanbuild*
+conanrun*
+deactivate_*
+build
+docs_cpp
+slprj
+*_grt_rtw
+__pycache__
+.venv
+CMakeUserPresets.json

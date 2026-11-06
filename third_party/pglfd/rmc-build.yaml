@@ -1,0 +1,37 @@
+builds:
+  - context: conan
+    build_file: conanfile.cpp.py
+    test_package: cpp/test_package
+    configurations:
+      - any:
+          pybind: { True, False }
+      - imports:
+          - current_linux
+
+  - context: conan
+    build_file: conanfile.python.py
+    test_package: python/test_package
+    configurations:
+      - any:
+          cpp_impl: { True, False }
+      - imports:
+          - current_linux
+
+  - context: conan
+    build_file: conanfile.matlab.py
+    test_package: matlab/test_package
+    configurations:
+      - imports:
+          - matlab_acad_current_linux
+
+# We do a final debug build as the NDEBUG macro disables
+# many Eigen assertions so we could have hidden bugs in
+# Release configurations.
+  - context: conan
+    build_file: conanfile.python.py
+    configurations:
+      - any:
+          build_type: {Debug}
+          cpp_impl: {True}
+      - imports:
+        - current_linux
