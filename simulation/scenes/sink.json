@@ -1,0 +1,14 @@
+{
+  "sink_pose": [0.55, 0, 0.4, 0, 0, 0, 1],
+  "pose_convention": "metres, XYZW; sink frame at rim centre expressed in robot base",
+  "product": "Villeroy & Boch O.novo 4A416101, White Alpin",
+  "outer_width_m": 0.60,
+  "outer_depth_m": 0.46,
+  "outer_height_m": 0.175,
+  "bowl_depth_m": 0.125,
+  "rim_height_above_floor_m": 0.85,
+  "robot_base_height_above_floor_m": 0.45,
+  "geometry": "Approximate faceted bowl, not manufacturer CAD. Sponge geometry is illustrative; course TCP and load unchanged.",
+  "product_source": "https://pro.villeroy-boch.com/de/de/bw/p/O.novo-Lavabos-Rectangulaire--4A416101?cHash=2a4da9341c1c46a1dfa1a68163285d64",
+  "height_source": "https://www.geberit.de/badezimmerprodukte/inspirationen/tipps-tricks/die-ideale-einbauhoehe/"
+}

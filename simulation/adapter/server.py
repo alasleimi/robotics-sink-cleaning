@@ -77,7 +77,9 @@ class Engine:
         self.counter = 0
         self.last_command = {**POSITION, "q": self.state["q"]}
         self.manual = None
+        self.manual_setpoint = None
         self.follow_target = False
+        self.guiding_enabled = False
         self.trace = deque(maxlen=10000)
         self.time = 0.
 
@@ -105,6 +107,7 @@ class Engine:
         if self.active is entry:
             self.active = None
             self.manual = None
+            self.manual_setpoint = None
             self.follow_target = False
             self.hold()
 
@@ -114,6 +117,9 @@ class Engine:
     def plan(self, entry, start=None, record=True):
         spec = entry["items"][entry["part"]]
         kind = spec["type"]
+        if kind == "handguiding":
+            kind = "hold"
+            entry["guideStarted"] = False
         which = spec.get("which", "tcp")
         state = self.state if start is None else start
         q0 = np.array(state["q"])
@@ -312,6 +318,21 @@ class Engine:
                 entry = self.active
                 try:
                     spec = entry["spec"]
+                    if spec["type"] == "handguiding":
+                        if self.guiding_enabled:
+                            entry["guideStarted"] = True
+                        elif entry["guideStarted"]:
+                            self.manual = None
+                            self.manual_setpoint = None
+                            self.follow_target = False
+                            self.hold()
+                            self.finish(entry)
+                            self.model.step()
+                            return
+                        else:
+                            self.hold()
+                            self.model.step()
+                            return
                     fired = [c.get("id", i) for i, c in enumerate(spec.get("conditions", [])) if self.condition(c)]
                     if fired:
                         entry["fired"] = fired
@@ -358,13 +379,28 @@ class Engine:
                 pass  # Keep the last reachable teaching target when the mouse goes out of reach.
         if self.manual and not self.paused:
             # Mouse/slider teaching overrides zero-stiffness motion targets only.
-            self.model.command({**POSITION, "q": self.manual})
+            target = np.array(self.manual)
+            if self.active and self.active["spec"]["type"] == "handguiding":
+                spec = self.active["spec"]
+                previous = np.array(self.state["q"] if self.manual_setpoint is None else self.manual_setpoint)
+                delta = target-previous
+                scale = max(1., np.max(np.abs(delta))/max(spec["jointSpeed"]*.02, .00001),
+                            np.linalg.norm(self.model.jacobian("tcp")[:3]@delta)/max(spec["cartSpeed"]*.02,.00001))
+                target = previous+delta/scale
+                self.manual_setpoint = target.tolist()
+            command={**POSITION, "q": target.tolist()}
+            if self.active and self.active["spec"]["type"] == "handguiding":
+                command.update(guideJointSpeed=self.active["spec"]["jointSpeed"],
+                               guideCartSpeed=self.active["spec"]["cartSpeed"])
+            self.model.command(command)
         self.model.step()
 
     def request(self, command):
         action = command["action"]
         if action == "state":
-            return {**self.state, "tcpOffset": self.model.tcp_offset, "paused": self.paused, "activeCount": sum(e["state"] in ("queued", "running") for e in self.motions.values())}
+            return {**self.state, "tcpOffset": self.model.tcp_offset, "paused": self.paused,
+                    "guidingEnabled": self.guiding_enabled,
+                    "activeCount": sum(e["state"] in ("queued", "running") for e in self.motions.values())}
         if action == "submit":
             return self.submit(command["motion"])
         if action == "motion":
@@ -389,19 +425,26 @@ class Engine:
             if len(force) != 3 or any(not math.isfinite(x) or abs(x) > 100 for x in force):
                 raise ValueError("Use three finite forces, each within ±100 N")
             self.model.call("setForce", force)
+        elif action == "handguide":
+            self.guiding_enabled = bool(command["enabled"])
         elif action == "teach":
             self.model.validate_joints(command["q"])
+            if self.active and self.active["spec"]["type"] == "handguiding" and not self.guiding_enabled:
+                raise ValueError("Enable hand-guiding before moving the teaching target")
             if self.active and not all(x == 0 for x in self.active["spec"].get("control", {}).get("stiffness", [1])):
                 raise ValueError("Use teaching controls in Exercise 1 / zero-stiffness mode, or abort active motion first")
             self.manual = command["q"]
             self.follow_target = False
         elif action == "teachTarget":
+            if self.active and self.active["spec"]["type"] == "handguiding" and not self.guiding_enabled:
+                raise ValueError("Enable hand-guiding before following the teaching target")
             if self.active and not all(x == 0 for x in self.active["spec"].get("control", {}).get("stiffness", [1])):
                 raise ValueError("Use scene teaching in Exercise 1 or abort active motion first")
             self.model.set_target(self.state["tcp"])
             self.follow_target = True
         elif action == "releaseTeach":
             self.manual = None
+            self.manual_setpoint = None
             self.follow_target = False
         elif action == "inverse":
             return {"q": self.model.inverse(command["pose"], command.get("seed", self.state["q"]),
@@ -422,7 +465,7 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--session", type=Path, default=ROOT / ".tools/adapter-session.json")
     parser.add_argument("--fast", action="store_true")
-    parser.add_argument("--scene", choices=["empty", "wire"], default="empty")
+    parser.add_argument("--scene", choices=["empty", "wire", "sink"], default="empty")
     args = parser.parse_args()
     engine = Engine(Model(headless=args.headless, scene=args.scene))
     token = secrets.token_urlsafe(32)
@@ -430,6 +473,7 @@ def main():
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
+        disable_nagle_algorithm = True
 
         def setup(self):
             super().setup()
@@ -495,7 +539,16 @@ def main():
                         future.set_exception(exc)
             engine.tick()
             if not args.fast:
-                time.sleep(max(0., .02 - (time.monotonic()-start)))
+                # Serve telemetry during the rest of this 20 ms interval. A
+                # recorder's sequential SDK getters must not each wait a tick.
+                while (remaining := .02-(time.monotonic()-start)) > 0:
+                    try:
+                        command,future=requests.get(timeout=remaining)
+                    except Empty:
+                        break
+                    if future.set_running_or_notify_cancel():
+                        try: future.set_result(engine.request(command))
+                        except Exception as exc: future.set_exception(exc)
     except KeyboardInterrupt:
         pass
     finally:

@@ -33,6 +33,17 @@ final class MotionCodec {
   }
 
   private JsonObject encode(IMotion motion, String which, JsonObject inherited) {
+    if (motion instanceof HandGuidingMotion h) {
+      if (h.hasConditions() || h.hasTrigger() || h.hasMotionOverlay()
+          || h.getJointLimitsEnabled()!=null || h.getJointLimitsMin()!=null || h.getJointLimitsMax()!=null
+          || h.isPermanentPullOnViolationAtStart())
+        throw new UnsupportedOperationException("Custom hand-guiding limits/triggers are not implemented");
+      return Bridge.object("type","handguiding","which",which,
+          "jointSpeed",h.getJointVelocityLimit(),"cartSpeed",h.getCartVelocityLimit()/1000,
+          "control",Bridge.object("kind","joint","stiffness",new double[7],
+              "damping",new double[] {.7,.7,.7,.7,.7,.7,.7},
+              "guideJointSpeed",h.getJointVelocityLimit(),"guideCartSpeed",h.getCartVelocityLimit()/1000));
+    }
     if (!(motion instanceof KROSMotion<?> m)) throw unsupported(motion);
     if (m.hasTrigger() || m.hasMotionOverlay())
       throw new UnsupportedOperationException(

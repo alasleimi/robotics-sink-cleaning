@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "units": "seconds, metres, XYZW quaternion, radians, N, Nm",
+  "pose_frame": "robot_base",
+  "tcp": [
+    0.0,
+    0.0,
+    0.202,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "tool_template": "EXERCISE_TOOL",
+  "sink_pose": [
+    0.55,
+    0,
+    0.4,
+    0,
+    0,
+    0,
+    1
+  ],
+  "calibration_file": "simulation/scenes/sink.json",
+  "complete": true,
+  "source": "learned",
+  "learned_model": "tpkmp",
+  "joint_positions_valid": false,
+  "wrench_valid": false,
+  "samples": 60,
+  "duration_s": 8.0
+}

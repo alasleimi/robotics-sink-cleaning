@@ -67,13 +67,24 @@ class WireLoopTool(CourseTool):
             "fromto", "0 0 0 " + " ".join(map(str, tcp+[0,radius,0])))
 
 
+@register_gripper
+class SpongeTool(CourseTool):
+    def __init__(self,idn=0):
+        super().__init__(idn)
+        geom=self.worldbody[0].find("geom[@name='"+self.naming_prefix+"tool_contact']")
+        geom.set("type","box")
+        geom.set("size",".035 .025 .012")
+        geom.set("rgba",".92 .72 .15 1")
+        geom.set("solref",".03 1")
+
+
 class CourseEnvironment(ManipulationEnv):
     """Real robosuite environment; env.step accepts seven absolute joint targets."""
     def __init__(self, *, scene="empty", **kwargs):
-        if scene not in ("empty", "wire"):
-            raise ValueError("Scene must be empty or wire")
+        if scene not in ("empty", "wire", "sink"):
+            raise ValueError("Scene must be empty, wire or sink")
         self.scene = scene
-        super().__init__(robots="IIWA", base_types="NullMount", gripper_types="WireLoopTool" if scene=="wire" else "CourseTool",
+        super().__init__(robots="IIWA", base_types="NullMount", gripper_types={"wire":"WireLoopTool","sink":"SpongeTool"}.get(scene,"CourseTool"),
             controller_configs={"type": "BASIC", "body_parts": {"right": {
                 "type": "JOINT_POSITION", "input_type": "absolute", "kp": 150,
                 "damping_ratio": 1, "interpolation": None, "gripper": {"type": "GRIP"}}}},
@@ -91,7 +102,12 @@ class CourseEnvironment(ManipulationEnv):
         hand.set("quat", "1 0 0 0")
         hand.set("pos", "0 0 0.045")
         self.robots[0].init_qpos = np.array([0, np.pi/6, 0, -np.pi/3, 0, np.pi/4, 0])
+        if self.scene == "sink":
+            self.robots[0].init_qpos = np.array([0,0,0,-np.pi/2,0,np.pi/2,0])
         arena = EmptyArena()
+        if self.scene == "sink":
+            from sink import add_sink
+            add_sink(arena)
         target = ET.SubElement(arena.worldbody, "body", name="TeachTarget", mocap="true", pos="0 0 1.5")
         ET.SubElement(target, "geom", name="TeachTarget_visual", type="sphere", size=".035",
                       contype="0", conaffinity="0", rgba=".1 .9 .3 .35", group="1")

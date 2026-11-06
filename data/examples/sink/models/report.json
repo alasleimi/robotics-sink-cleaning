@@ -1,0 +1,30 @@
+{
+  "training": [
+    "data\\examples\\sink\\demos\\wipe-01",
+    "data\\examples\\sink\\demos\\wipe-02",
+    "data\\examples\\sink\\demos\\wipe-03",
+    "data\\examples\\sink\\demos\\wipe-04"
+  ],
+  "held_out": "data\\examples\\sink\\demos\\wipe-05",
+  "reference": "Aligned empirical manifold means/covariances; no GMM",
+  "comparison": "KMP uses sink frame; TP-KMP additionally receives held-out start/end frames",
+  "demonstrators": [
+    "scripted simulator teaching target",
+    "scripted simulator teaching target",
+    "scripted simulator teaching target",
+    "scripted simulator teaching target",
+    "scripted simulator teaching target"
+  ],
+  "metrics": {
+    "kmp": {
+      "position_rmse_mm": 9.986341901301948,
+      "orientation_rmse_deg": 0.2238408498941429,
+      "max_position_error_mm": 10.864960634670705
+    },
+    "tpkmp": {
+      "position_rmse_mm": 0.4146125609845846,
+      "orientation_rmse_deg": 0.011103561485634576,
+      "max_position_error_mm": 1.6229383259779475
+    }
+  }
+}

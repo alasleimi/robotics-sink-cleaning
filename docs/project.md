@@ -12,7 +12,8 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Sunrise simulation adapter | E1, taught redundancy, force fixes and wire fixture implemented; full Windows/Intel Mac/Apple Silicon CI passed | Re-teach in the corrected flange convention; see `simulation/README.md` |
 | Robot/API exercises | Completed temporary solutions tested on Windows, including force-guided wire traversal; all templates restored byte-for-byte | Teach F0-F2/J0-J2 in 01, then work through the restored exercises; see `validation.md` |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
-| Demonstration recording | Simulator teaching saves and FileLogger tested | Agree on lab recording fields and setup |
+| Demonstration recording and replay | Sunrise hand-guiding recorder and path replay implemented; simulator integration tested | Check actual sponge TCP/load and guiding setup, then record a short lab take; see `demonstrations.md` |
+| KMP and TP-KMP baseline | PGLfD pipelines trained on five scripted simulator takes | Replace synthetic takes with human demonstrations and evaluate on new strokes |
 | PushWiper/adaptive wiping | Reading pending | Summarise their inputs, outputs, and feedback |
 | Sink reconstruction | Unstarted | Photograph sink and assess geometry capture |
 

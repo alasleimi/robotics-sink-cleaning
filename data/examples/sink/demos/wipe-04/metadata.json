@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "source": "simulation",
+  "created": "2026-11-06T14:04:26.362722300Z",
+  "complete": true,
+  "units": "seconds, metres, XYZW quaternion, radians, N, Nm",
+  "pose_frame": "robot_base",
+  "wrench_frame": "robot_base; moment about TCP",
+  "guidance": "KUKA HRCMotions.handGuiding",
+  "requested_hz": 50,
+  "tool_template": "EXERCISE_TOOL",
+  "sink_pose": [
+    0.55,
+    0,
+    0.4,
+    0,
+    0,
+    0,
+    1
+  ],
+  "calibration_file": "simulation/scenes/sink.json",
+  "tcp": [
+    0.0,
+    0.0,
+    0.202,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "samples": 310,
+  "missed_deadlines": 168,
+  "duration_s": 8.6854919,
+  "demonstrator": "scripted simulator teaching target",
+  "max_scene_contacts": 1,
+  "example_note": "Scripted simulation; copied without changing samples. Calibration path made repository-relative."
+}

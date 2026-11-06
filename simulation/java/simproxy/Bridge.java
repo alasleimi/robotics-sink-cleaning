@@ -10,6 +10,8 @@ public final class Bridge {
   static final Gson JSON = new Gson();
   private final URI uri;
   private final String token;
+  private JsonObject cachedState;
+  private long cachedAt;
 
   public Bridge() throws Exception {
     JsonObject session =
@@ -31,6 +33,7 @@ public final class Bridge {
   }
 
   public JsonObject call(String action, Object... pairs) {
+    if (!action.equals("state") && !action.equals("motion") && !action.equals("trace")) cachedState=null;
     JsonObject request = object(pairs);
     request.addProperty("action", action);
     HttpURLConnection connection = null;
@@ -66,7 +69,12 @@ public final class Bridge {
   }
 
   public JsonObject state() {
-    return call("state");
+    // Consecutive SDK telemetry getters share one 20 ms physics snapshot.
+    if(cachedState==null || System.nanoTime()-cachedAt>=20_000_000L) {
+      cachedState=call("state");
+      cachedAt=System.nanoTime();
+    }
+    return cachedState;
   }
 
   static double[] array(JsonObject o, String key) {

@@ -12,6 +12,10 @@ final class TeachingPanel {
           JFrame window = new JFrame("Simulation — teach joints / apply force");
           window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
           JPanel panel = new JPanel(new GridLayout(0, 2, 6, 4));
+          JCheckBox guiding = new JCheckBox("Enable hand-guiding (release ends take)");
+          guiding.addActionListener(e -> bridge.call("handguide", "enabled", guiding.isSelected()));
+          panel.add(guiding);
+          panel.add(new JLabel("For Record; Exercise 1 works as before."));
           JSpinner[] joints = new JSpinner[7];
           double[] q = Bridge.array(bridge.state(), "q");
           int[] limits = {170, 120, 170, 120, 170, 120, 175};

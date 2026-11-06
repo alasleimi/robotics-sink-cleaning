@@ -30,10 +30,17 @@ jobs:
         run: uv run --locked python scripts/check_java.py
       - name: Run original exercises against robosuite / MuJoCo physics
         run: uv run --locked scripts/check_simulation.py
+      - name: Record with hand-guiding and replay through Sunrise API
+        run: uv run --locked scripts/check_recording.py
+      - name: Train KMP and TP-KMP and replay in the washbasin scene
+        run: uv run --locked scripts/check_learning.py
       - name: Upload simulation logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: simulation-logs-${{ matrix.os }}
-          path: .tools/sim-*/*.log
+          path: |
+            .tools/sim-*/*.log
+            .tools/sim-*/*report.json
+            .tools/sim-*/models/comparison.png
           retention-days: 7

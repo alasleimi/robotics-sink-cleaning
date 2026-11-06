@@ -39,6 +39,14 @@ class SunriseImpedance(JointPositionController):
         else:
             damping = np.where(k == 0, 2*ratio, 2*ratio*np.sqrt(k*np.diag(mass)))
             torque = k*(np.array(command["q"])-q) - damping*dq
+        if "guideJointSpeed" in command:
+            # KUKA describes opposing damping above the guiding velocity limit.
+            # Approximate that response; this is not certified safety monitoring.
+            torque -= 100*np.sign(dq)*np.maximum(np.abs(dq)-command["guideJointSpeed"],0)
+            velocity=jac[:3]@dq
+            speed=np.linalg.norm(velocity)
+            if speed>command["guideCartSpeed"]:
+                torque -= jac[:3].T@(500*(speed-command["guideCartSpeed"])*velocity/max(speed,1e-9))
         return self.clip_torques(torque + self.torque_compensation)
 
 
@@ -86,6 +94,11 @@ class Model:
                 self.viewer.cam.distance = 2.2
                 self.viewer.cam.azimuth = 135
                 self.viewer.cam.elevation = -20
+                if scene == "sink":
+                    self.viewer.cam.lookat[:] = [.4,0,.2]
+                    self.viewer.cam.distance = 1.8
+                    self.viewer.cam.azimuth = -45
+                    self.viewer.cam.elevation = -30
 
     def pose(self, which, data=None):
         data = self.d if data is None else data

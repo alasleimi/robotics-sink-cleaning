@@ -1,0 +1,89 @@
+# Record, replay and learn
+
+Commands run from the repository root. Setup is `uv run --locked scripts/setup.py`; uv manages Python and the launchers invoke Gradle for Java. New output directories must not already exist.
+
+## Record in simulation
+
+```sh
+uv run --locked scripts/record.py data/recordings/take-01
+```
+
+1. Wait for `RECORDING` in the terminal. The arm starts where it is; recording does not command a preset posture.
+2. Check **Enable hand-guiding** in the teaching panel. Use its joint targets, or **Follow scene TeachTarget** and drag the green sphere in MuJoCo. Direct mouse forces work after releasing the teaching target.
+3. Uncheck **Enable hand-guiding**, or press Enter in the terminal, to finish and save. To discard a take, delete its directory yourself.
+
+The first sample may precede enabling. Training trims stationary ends. `--seconds 10` sets a maximum duration; `--headless` hides windows; `--scene empty` selects free space.
+
+## Record on the robot
+
+```sh
+uv run --locked scripts/record.py data/recordings/lab-01 --robot --sink calibration.json
+```
+
+This uses `HRCMotions.handGuiding()` from the bundled KUKA API, with 0.3 rad/s joint and 100 mm/s Cartesian guiding limits. Use the lab's configured guiding/enabling device; releasing the guiding switch or pressing Enter ends the take. It uses the existing controller address and `EXERCISE_TOOL`, without running `goFront()` or the course gravity-compensation loop.
+
+Before the first lab take, check the actual sponge TCP/load and hand-guiding configuration with Arne. The current XML describes the course tool. The recorder saves that XML and the active TCP, but cannot confirm the physical attachment. No hardware connection has been tested.
+
+`calibration.json` contains the measured sink pose in robot-base coordinates:
+
+```json
+{"sink_pose": [0.55, 0.0, 0.4, 0.0, 0.0, 0.0, 1.0]}
+```
+
+Those numbers are the **simulator example**, not a lab calibration. Entries are XYZ in metres followed by quaternion XYZW. The pose maps sink coordinates into robot-base coordinates. Omit `--sink` for an initial logger check if needed; training requires calibration. AprilTag calibration is not implemented.
+
+## Inspect and replay
+
+```sh
+uv run --locked scripts/inspect_demo.py data/recordings/take-01
+uv run --locked scripts/replay.py data/recordings/take-01 --approach
+uv run --locked scripts/replay.py data/recordings/lab-01 --robot
+```
+
+The same folder works with either backend. A real recording can be replayed in simulation without conversion, provided the simulated tool and robot-base/sink placement match it. The supplied basin pose is fixed in `simulation/scenes/sink.json`; it is not automatically repositioned from a recording.
+
+Replay normally requires the TCP within 10 mm and about 8 degrees of the first pose. `--approach` permits a slow direct PTP approach; check its clearance, particularly around the rim. Replay rejects incomplete/malformed data and a mismatching saved TCP. It follows Cartesian poses at up to 30 mm/s, retains recorded E1 for raw takes, and uses 2 mm blending. Waypoints are sampled at roughly 0.2 s of recorded time. **It replays the path, not original timing or forces**, and does not plan around collisions. Learned paths omit recorded joint constraints because their joint columns are placeholders.
+
+## Try KMP and TP-KMP
+
+```sh
+uv run --locked scripts/train_kmp.py data/examples/sink/demos data/recordings/my-models
+uv run --locked scripts/replay.py data/recordings/my-models/tpkmp --approach
+```
+
+The training folder contains one subdirectory per take. At least three takes are required; the last by name is held out. Outputs are a comparison plot, JSON metrics, NPZ model reference data, and replayable `kmp` / `tpkmp` folders. Nothing is automatically sent to the robot.
+
+Both use PGLfD's existing `KMP`, with progress as input and position/orientation (`R3*SO3`) as output. We trim stationary ends, resample to 60 points, and calculate a manifold mean/covariance directly from aligned repetitions. This pilot does not need an additional GMM/GMR stage. Progress uses normalized elapsed time; it does not align substantially different movement speeds with dynamic time warping.
+
+Here **TKMP means task-parameterized KMP (TP-KMP)**: two local KMPs in each take's start/end frames, combined by PGLfD's `TaskParameterizedModel`. Ordinary KMP uses the sink frame. TP-KMP receives the held-out start/end frames, so the comparison has different conditioning assumptions.
+
+To generate another synthetic dataset:
+
+```sh
+uv run --locked scripts/make_demos.py data/recordings/new-sink-demos
+uv run --locked scripts/train_kmp.py data/recordings/new-sink-demos data/recordings/new-models
+```
+
+These are scripted teaching targets sampled by the actual Java recorder through MuJoCo physics, not human demonstrations. The sponge makes intermittent contact; there is no pressure controller, dirt model, or cleaning-success measurement.
+
+## Washbasin
+
+![Simulated washbasin and iiwa](images/sink-scene.png)
+
+The white basin approximates a **Villeroy & Boch O.novo 4A416101**, 600 × 460 × 175 mm with 125 mm inner depth. Its rim is 850 mm above the floor, with the robot base on a 450 mm pedestal. The bowl contour and faucet are simplified geometry, not manufacturer CAD. The sponge is a contact box around the existing TCP; tool mass/CoG remain the course values.
+
+Sources: [manufacturer dimensions](https://pro.villeroy-boch.com/de/de/bw/p/O.novo-Lavabos-Rectangulaire--4A416101?cHash=2a4da9341c1c46a1dfa1a68163285d64), [Geberit installation-height guidance](https://www.geberit.de/badezimmerprodukte/inspirationen/tipps-tricks/die-ideale-einbauhoehe/).
+
+## Saved format
+
+`samples.csv` columns:
+
+```text
+t,x,y,z,qx,qy,qz,qw,j1,j2,j3,j4,j5,j6,j7,fx,fy,fz,mx,my,mz,read_seconds
+```
+
+Time is monotonic seconds; XYZ is metres in robot base; orientation is XYZW; joints are radians. Wrench is N/Nm, expressed in robot base with moment about TCP. During hand-guiding it includes the person's interaction, so it is not purely sponge pressure. `read_seconds` measures sequential SDK reads; they are not an atomic hardware snapshot.
+
+`metadata.json` records schema, source, completion, units/frames, active TCP, optional sink calibration, sample count and missed deadlines. Recording targets 50 Hz but achieved roughly 30–40 Hz in this Windows pilot; use the saved timestamps. Interrupted takes remain marked incomplete. Training leaves raw files unchanged and converts poses with `inverse(T_base_sink) * T_base_tcp`.
+
+Validation details and pilot results are in [validation.md](validation.md).

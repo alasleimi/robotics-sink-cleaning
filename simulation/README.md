@@ -41,7 +41,8 @@ Exercises 01, 05a, 05b, and 06 intentionally loop until the session is closed. P
 - Scalar relative joint velocity/acceleration, Cartesian velocity/acceleration, queued PTP/LIN blending.
 - Await/timeout, completion/error state, pause/resume, cancel/abort, force and joint-torque break conditions with AND/OR.
 - Actual joint/TCP/flange state, measured motor torque, tool-wrench feedback, joint impedance and Cartesian impedance.
-- Teaching files and Arne's FileLogger. XYZ translations use mm in Java and metres in the bridge; angles use radians except the degree-formatted `.frm` pose line.
+- Teaching files, Arne's FileLogger, and the project demonstration recorder/replayer. XYZ translations use mm in Java and metres in the bridge; angles use radians except the degree-formatted `.frm` pose line.
+- `HRCMotions.handGuiding()` with joint/Cartesian guiding velocity limits: enable in the teaching panel; releasing ends the motion. Zero-stiffness dynamics and opposing damping approximate hand-guiding. Custom guiding joint-limit settings are rejected; controller safety services are not simulated.
 - E1-constrained IK, Cartesian PTP and LIN; Status selects the PTP configuration. Frames without redundancy retain starting E1/Status. LIN interpolates E1 and retains its starting Status. Turn is stored but ignored for the iiwa's joints, which cannot rotate beyond 180 degrees. See [E1 details and example](../docs/e1.md).
 
 Use `--headless --fast` for automated runs, or `--data PATH` for a separate teaching set. `uv run --locked scripts/check_simulation.py` runs original entry points plus physical assertions using temporary data. It creates and closes its own simulator.
@@ -50,7 +51,7 @@ Use `--headless --fast` for automated runs, or `--data PATH` for a separate teac
 
 This is a custom adapter using genuine SDK motion/geometry objects. It is **not Sunrise.OS running inside a simulator**. Java 17 instrumentation is isolated from the hardware build; the simulator JVM also blocks non-loopback connections.
 
-The scene is a robosuite `CourseEnvironment` with its **iiwa7** model, a fixed base, and the course XML's 202 mm TCP, mass and centre of mass. The hand attachment uses Sunrise's flange convention and matches Arne's independent forward kinematics. The default tool uses a contact sphere and an approximate inertia tensor because the course XML supplies zero inertias. The optional wire scene uses a ring. The sink and sponge are not modeled; dynamics, ring dimensions and wire geometry are not calibrated to the lab.
+The scene is a robosuite `CourseEnvironment` with its **iiwa7** model, a fixed base, and the course XML's 202 mm TCP, mass and centre of mass. The hand attachment uses Sunrise's flange convention and matches Arne's independent forward kinematics. The default tool uses a contact sphere and an approximate inertia tensor because the course XML supplies zero inertias. The optional wire scene uses a ring. The `sink` scene adds an approximate white bathroom washbasin and a sponge contact box; see the [demonstration guide](../docs/demonstrations.md). Dynamics and tool/fixture geometry are not calibrated to the lab.
 
 Joint and Cartesian feedback run every 2 ms through a robosuite controller extension. Unlike robosuite's acceleration gains, Sunrise stiffness is interpreted as N/m or Nm/rad. Damping uses the model's joint/task inertia; gravity/bias compensation and null-space projection use robosuite/MuJoCo dynamics. This remains an approximation of KUKA's controller. IK uses MuJoCo Jacobians with bounded numerical solving at joint limits; blended paths retain the custom planner.
 

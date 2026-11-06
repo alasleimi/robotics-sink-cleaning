@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--fast", action="store_true", help="Run simulation without wall-clock pacing")
     parser.add_argument("--data", help="Separate teaching directory (default data/simulation/robosuite-sunrise)")
-    parser.add_argument("--scene", choices=["empty", "wire"], default="empty", help="Optional wire-loop practice course")
+    parser.add_argument("--scene", choices=["empty", "wire", "sink"], default="empty", help="Optional practice scene")
     args = parser.parse_args()
     config = load_config()
     if args.command == "exercise":

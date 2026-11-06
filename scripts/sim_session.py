@@ -49,9 +49,11 @@ class Session:
 
     def start(self, args, name, **kwargs):
         hidden = kwargs.pop("hidden", True)
+        interactive = kwargs.pop("interactive", False)
         log = (self.folder / f"{name}.log").open("w", encoding="utf-8")
         self.logs.append(log)
-        p = subprocess.Popen(args, cwd=kwargs.pop("cwd", ROOT), stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT,
+        p = subprocess.Popen(args, cwd=kwargs.pop("cwd", ROOT), stdin=None if interactive else subprocess.PIPE,
+                             stdout=None if interactive else log, stderr=subprocess.STDOUT,
                              creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" and hidden else 0, **kwargs)
         self.processes.append(p)
         return p
@@ -63,12 +65,12 @@ class Session:
         with urllib.request.urlopen(req, timeout=30) as response:
             return json.load(response)
 
-    def java(self, main, *args, data=None, headless=True, label="exercise"):
+    def java(self, main, *args, data=None, headless=True, label="exercise", interactive=False):
         java = local_path(self.config, "java_home") / "bin" / ("java.exe" if os.name == "nt" else "java")
         classpath = (ROOT / ".tools/simulator-classpath.txt").read_text()
         return self.start([str(java), f"-Djava.awt.headless={str(headless).lower()}",
             f"-Drobot.dataDir={data or ROOT / 'data/simulation/robosuite-sunrise'}", f"-Dsim.session={self.session_file}",
-            "-cp", classpath, main, *args], label, hidden=headless)
+            "-cp", classpath, main, *args], label, hidden=headless, interactive=interactive)
 
     def close(self):
         for p in reversed(self.processes):

@@ -1,5 +1,22 @@
 # Validation history
 
+## Hand-guiding, washbasin and KMP — 6 November 2026
+
+Implemented the small `record.py` / `replay.py` launchers and Sunrise Java mains. They share one CSV/JSON format between hardware and simulation. Hardware uses the original SDK/classpath; Mockito and simulator classes are excluded. No robot was connected, so controller connectivity and real hand-guiding/replay remain untested.
+
+Windows checks passed:
+
+- **24 Python checks**, including PGLfD geometry, and **11 Java tests**. Tests reject incomplete/bad recordings and cover transforms, resampling, quaternion conversion, and hand-guiding enable/release.
+- `check_simulation.py`: full original exercise/force/contact regression suite still passes; exercise source files and hardware configuration are unchanged. Local report: `.tools/sim-8ipclhee/report.json`.
+- `check_recording.py`: the actual Java recorder waits for guiding enable, records physical movement, ends on switch release, and the same file replays through the actual Java replayer. A later run also checked refusal of a distant start without `--approach` (`.tools/sim-youpcwpy/report.json`).
+- Five scripted simulator takes were recorded in the white washbasin scene. Each had physical contact; these are **synthetic**, not human or real-robot demonstrations. The example data is in `data/examples/sink`. Recorded sampling was roughly 30–40 Hz against a 50 Hz target; actual times and missed deadlines are retained.
+- PGLfD KMP and TP-KMP trained on takes 1–4, with take 5 held out. Position RMSE: **9.99 mm / 0.415 mm**; orientation RMSE: **0.224° / 0.011°**. TP-KMP additionally receives the held-out start/end frames, so this is a pipeline demonstration with different conditioning, not a universal comparison of the methods. [Plot and reference data](../data/examples/sink/models).
+- The recorded stroke and both learned paths replayed in the basin. Final-position error was below **0.2 mm** for all three in the initial run (`.tools/sim-2xnophzr/sink-report.json`). The reproducible `check_learning.py` subsequently passed retraining plus position/orientation replay checks (`.tools/sim-67ss5prd/learning-report.json`). This measures endpoint tracking in simulation, not error along the whole path or hardware accuracy. The normal command-line TP-KMP replay with `--headless --approach` also completed.
+
+The scene uses an approximate O.novo-sized basin at an 850 mm rim height and a sponge contact box; its render was visually inspected. No pressure regulation or cleaning-success metric is implemented. Replay follows a slow geometric path, without original timing or force reproduction. Training uses aligned manifold statistics as KMP references rather than an extra GMM/GMR stage.
+
+CI now includes recording/replay and `check_learning.py` (retrain and replay raw/KMP/TP-KMP) on Windows, Intel Mac and Apple Silicon Mac. Cross-platform results for this change will be recorded after the run completes.
+
 ## Completed exercise rehearsal — 6 November 2026
 
 Temporarily completed the actual Exercise 2/3/4/8 Java sources and ran their original entry points through the adapter on Windows. Exercises 1, 5a, 5b, 6 and 7 already contain runnable implementations and were exercised directly. This goes beyond launching empty student scaffolds.

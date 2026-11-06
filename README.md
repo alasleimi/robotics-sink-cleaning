@@ -37,6 +37,18 @@ See the short [exercise guide](simulation/README.md) for teaching controls, prer
 
 E1-constrained IK/PTP/LIN and taught elbow replay are supported. The flange convention matches Arne's supplied kinematics. Existing CoppeliaSim and first-port robosuite recordings remain in their previous directories; re-teach Cartesian poses after this correction. Add `--scene wire` for Exercise 8's generic contact practice fixture.
 
+## Record and learn demonstrations
+
+```sh
+uv run --locked scripts/record.py data/recordings/take-01
+uv run --locked scripts/replay.py data/recordings/take-01 --approach
+uv run --locked scripts/train_kmp.py data/examples/sink/demos data/recordings/my-models
+```
+
+Recording opens the white bathroom washbasin scene. Enable hand-guiding in the teaching panel, move the target, then release the checkbox or press Enter to save. Both commands default to simulation; add `--robot` to use Sunrise on the actual arm. `--approach` allows a direct slow move to the first pose; it does not plan around the basin.
+
+The [short demonstration guide](docs/demonstrations.md) covers hardware use, controls, sink calibration, replay and KMP/TP-KMP. Five scripted simulator takes and their learned paths are included in `data/examples/sink`. Hardware recording/replay has not been tested in the lab.
+
 ## Where things belong
 
 | Folder | Contents |
