@@ -1,5 +1,16 @@
 # Validation history
 
+## Responsive mouse teaching — 10 November 2026
+
+Reproduced an interactive freeze using the unreachable pose from the user's simulator log. Each 20 ms update repeatedly attempted full IK, including its expensive fallback: median **414 ms**, maximum **640 ms**. Mouse following now takes one bounded differential IK step from the actual arm. Commanded PTP/LIN retain their existing full solver and E1 checks; recorder guiding speeds are unchanged.
+
+Windows validation passed:
+
+- The same headless reproduction: median **3.4 ms**, maximum **4.3 ms** per update. Local before/after reports: `.tools/teaching-before.json`, `.tools/teaching-after.json`.
+- With the washbasin viewer open and hand-guiding enabled: median **7.5 ms**, 95th percentile below **14 ms**; 10 seconds of physics took 10.24 seconds. The arm followed a reachable target, stayed responsive at the original unreachable pose, and returned to within **0.01 mm** of the starting position. These are scripted marker updates with the real viewer, not automated mouse gestures. Report: `.tools/teaching-viewer-after.json`.
+- **24 Python tests** passed, including pose/orientation following, recovery from an unreachable marker, guiding speed limits, and switch release. The regression rejects any call to full IK during mouse following.
+- Full exercise/contact integration (`.tools/sim-r5v7r32j/report.json`) and Java recorder/replayer integration (`.tools/sim-i2k2ciyd/report.json`) passed. No hardware was connected.
+
 ## Hand-guiding, washbasin and KMP — 6 November 2026
 
 Implemented the small `record.py` / `replay.py` launchers and Sunrise Java mains. They share one CSV/JSON format between hardware and simulation. Hardware uses the original SDK/classpath; Mockito and simulator classes are excluded. No robot was connected, so controller connectivity and real hand-guiding/replay remain untested.

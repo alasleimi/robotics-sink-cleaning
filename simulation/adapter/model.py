@@ -192,6 +192,22 @@ class Model:
             return
         raise ValueError(f"Unknown model operation {name}")
 
+    def teaching_step(self, pose):
+        """One bounded differential IK step for the mouse, from the actual arm.
+
+        A dragged marker can be unreachable. Never run the full pose solver or
+        queue up old mouse positions here: physics and input must keep updating.
+        PTP/LIN still use inverse() with its full accuracy/redundancy checks.
+        """
+        actual = self.pose("tcp")
+        error = np.r_[np.asarray(pose[:3])-actual[:3],
+            (Rotation.from_quat(pose[3:])*Rotation.from_quat(actual[3:]).inv()).as_rotvec()]
+        error /= max(1., np.linalg.norm(error[:3])/.02, np.linalg.norm(error[3:])/.1)
+        jac = self.jacobian("tcp")
+        delta = jac.T @ np.linalg.solve(jac @ jac.T + np.eye(6)*1e-4, error)
+        delta *= min(1., .05/max(np.max(np.abs(delta)), 1e-9))
+        return np.clip(self.d.qpos[self.qpos]+delta, *self.limits.T).tolist()
+
     def inverse(self, pose, seed, which="tcp", retry=False, *, e1=None, status=None):
         pose = np.asarray(pose, dtype=float)
         if pose.shape != (7,) or not np.all(np.isfinite(pose)) or np.linalg.norm(pose[3:]) < 1e-8:

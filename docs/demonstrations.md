@@ -9,10 +9,12 @@ uv run --locked scripts/record.py data/recordings/take-01
 ```
 
 1. Wait for `RECORDING` in the terminal. The arm starts where it is; recording does not command a preset posture.
-2. Check **Enable hand-guiding** in the teaching panel. Use its joint targets, or **Follow scene TeachTarget** and drag the green sphere in MuJoCo. Direct mouse forces work after releasing the teaching target.
+2. Check **Enable hand-guiding** in the teaching panel. Click **Follow scene TeachTarget**, then double-left-click the green sphere in MuJoCo. Hold **Ctrl + Shift + right-drag** for horizontal movement, **Ctrl + right-drag** for vertical movement, or **Ctrl + left-drag** for rotation. Dragging without Ctrl moves the camera. The panel's joint targets also work; direct mouse forces work after releasing the teaching target.
 3. Uncheck **Enable hand-guiding**, or press Enter in the terminal, to finish and save. To discard a take, delete its directory yourself.
 
 The first sample may precede enabling. Training trims stationary ends. `--seconds 10` sets a maximum duration; `--headless` hides windows; `--scene empty` selects free space.
+
+The simulated arm follows at the recorder's guiding limits (0.3 rad/s and 100 mm/s); it does not jump to the marker. If the marker goes out of reach, bring it back. Recording saves the actual arm movement, not the marker path.
 
 ## Record on the robot
 

@@ -11,11 +11,13 @@ This builds the simulator runtime, opens an owned robosuite/MuJoCo viewer, and c
 ## Teach first, then replay
 
 1. Start `exercise 01` and let the initial front movement finish.
-2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget** and select the green sphere in the MuJoCo viewer (double-click), then Ctrl + right-drag to translate it or Ctrl + left-drag to rotate it. Direct mouse forces on the arm are also available after releasing the teaching target.
+2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget** and double-left-click the green sphere in MuJoCo. **Ctrl + Shift + right-drag** moves it horizontally; **Ctrl + right-drag** moves it vertically; **Ctrl + left-drag** rotates it. Dragging without Ctrl moves the camera. Direct mouse forces on the arm are also available after releasing the teaching target.
 3. In Arne's **RobotControl**, press **SAVE_FRAME** and **SAVE_JOINT_POS**. The first names are **F0** and **J0**. Repeat at two other reachable poses to save F1/J1 and F2/J2.
 4. Close Exercise 1, then run `uv run --locked scripts/run.py exercise 02`.
 
 Saves contain the actual robot state. Files persist between sessions in `data/simulation/robosuite-sunrise/frames` and `data/simulation/robosuite-sunrise/joint_positions`. Frames retain E1, Status, Turn, and seven joint angles as an IK seed. Returning to a taught frame restores its elbow configuration.
+
+Mouse following takes a small IK step each update, so dragging outside the reachable workspace does not stall physics or input. The arm follows as far as it can; bring the marker back if it cannot reach it. This interactive approximation is separate from the full E1-constrained solver used by PTP/LIN.
 
 Existing files are never renumbered automatically. If old files start at F1/J1, explicitly teach and save F0/J0 using the name fields. Automatic naming continues after the largest existing numeric name. Entering an existing name deliberately replaces that file.
 

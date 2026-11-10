@@ -55,6 +55,51 @@ def test_handguiding_enable_release_and_velocity_limited_target(robot):
     assert engine.manual is None
 
 
+def test_mouse_guiding_tracks_pose_and_recovers_from_unreachable_target(robot, monkeypatch):
+    from server import Engine
+    engine=Engine(robot)
+    ident=engine.submit({'type':'handguiding','which':'tcp','jointSpeed':.3,'cartSpeed':.1,
+                         'control':{'kind':'joint','stiffness':[0]*7,'damping':[.7]*7}})['id']
+    engine.tick()
+    engine.request({'action':'handguide','enabled':True})
+    engine.request({'action':'teachTarget'})
+
+    # Regress the freeze: mouse updates must never invoke the expensive full IK
+    # solver, including when a marker stays outside the workspace for a while.
+    def full_ik_forbidden(*args, **kwargs):
+        pytest.fail('Interactive teaching called the full pose solver')
+    monkeypatch.setattr(robot,'inverse',full_ik_forbidden)
+    start=robot.pose('tcp')
+    target=np.array(start)
+    target[:3]+=[-.03,.04,.025]
+    target[3:]=(Rotation.from_rotvec([.08,-.04,.06])*Rotation.from_quat(start[3:])).as_quat()
+
+    def follow(pose, steps):
+        robot.set_target(pose)
+        previous=np.array(engine.manual_setpoint if engine.manual_setpoint is not None else robot.state()['q'])
+        for _ in range(steps):
+            engine.tick()
+            command=np.array(engine.manual_setpoint)
+            assert np.max(np.abs(command-previous))<=.0060001
+            robot.validate_joints(command)
+            previous=command
+
+    def assert_at(pose):
+        actual=robot.pose('tcp')
+        np.testing.assert_allclose(actual[:3],pose[:3],atol=.002)
+        assert (Rotation.from_quat(actual[3:])*Rotation.from_quat(pose[3:]).inv()).magnitude()<.01
+
+    follow(target,250)
+    assert_at(target)
+    impossible=target.copy(); impossible[:3]=[3.,0.,3.]
+    follow(impossible,100)
+    follow(start,500)
+    assert_at(start)
+    engine.request({'action':'handguide','enabled':False}); engine.tick()
+    assert engine.motions[ident]['state']=='finished'
+    assert engine.manual is None and not engine.follow_target
+
+
 @pytest.fixture
 def robot():
     # test_robosuite installs the adapter import path; make this file runnable alone.

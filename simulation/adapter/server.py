@@ -373,10 +373,7 @@ class Engine:
                     self.active = None
                     self.hold()
         if self.follow_target and not self.paused:
-            try:
-                self.manual = self.model.inverse(self.state["target"], self.state["q"])
-            except ValueError:
-                pass  # Keep the last reachable teaching target when the mouse goes out of reach.
+            self.manual = self.model.teaching_step(self.state["target"])
         if self.manual and not self.paused:
             # Mouse/slider teaching overrides zero-stiffness motion targets only.
             target = np.array(self.manual)
