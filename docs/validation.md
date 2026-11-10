@@ -9,6 +9,7 @@ Local Windows validation passed:
 - **25 Python checks and 16 Java tests**: legacy/new formats, missing optional values, rejection of missing required pose, unavailable SDK methods, null/invalid values, disabling slow channels, and preservation of disk-write failures.
 - Full recorder/replayer integration (`.tools/sim-lu7ecw8t/report.json`): extended telemetry, original recording/replay, switch/Enter/time stopping, forced missing joint/wrench/torque APIs and missing calibration, successful pose-only replay, cancellation and connection loss. Faults were injected only into the simulator's mocked SDK methods; the actual recorder executed unchanged.
 - KMP/TP-KMP training plus raw and learned path replay passed (`.tools/sim-9b361gxr/learning-report.json`). A separate training run on schema-2 copies of all five examples with every joint/wrench cell set to NaN produced valid KMP and TP-KMP predictions (`.tools/optional-kmp-ibqr4lba`).
+- The complete original exercise/contact regression also passed (`.tools/sim-mnyyh4r3/report.json`), including saved poses, E1, motion batches, force breaks and wire contact. Student exercise sources and hardware configuration are unchanged.
 
 No real robot was connected. Real sensor availability/rates remain unverified. Simulator temperature/safety/commanded-pose channels that it does not implement are reported unavailable, not filled with guessed values. The new code's cross-platform CI is pending.
 
