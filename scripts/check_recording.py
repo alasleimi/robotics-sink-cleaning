@@ -27,6 +27,10 @@ def main():
         rows,meta=load(folder)
         assert len(rows)>10 and meta['guidance']=='KUKA HRCMotions.handGuiding'
         assert meta['source']=='simulation' and len(meta['tcp'])==7
+        assert meta['schema']==2
+        events=[json.loads(line) for line in (folder/'telemetry.jsonl').read_text().splitlines()]
+        channels={event['channel'] for event in events if event.get('value') is not None}
+        assert {'flange_pose','measured_joint_torque_Nm','external_joint_torque_Nm'}<=channels
         assert np.ptp(rows[:,8])>.08
         before=np.array(s.call('state')['q'])
         refused=s.java('simproxy.DemoLauncher','replay',str(folder),label='replay-no-approach')
@@ -49,6 +53,14 @@ def main():
         time.sleep(.2); entered.stdin.write(b'\n'); entered.stdin.flush()
         assert entered.wait(timeout=10)==0,(s.folder/'record-enter.log').read_text()
         load(s.folder/'enter')
+        missing=s.java('simproxy.MissingTelemetryCheck',str(s.folder/'missing'),'1',str(s.folder/'no-calibration.json'),label='record-missing')
+        assert missing.wait(timeout=30)==0,(s.folder/'record-missing.log').read_text()
+        missing_rows,missing_meta=load(s.folder/'missing')
+        assert np.all(np.isfinite(missing_rows[:,:8])) and np.all(np.isnan(missing_rows[:,8:21]))
+        assert missing_meta['optional_channels']['joint_position_rad']['disabled']
+        assert missing_meta['optional_channels']['sink_calibration']['disabled']
+        missing_replay=s.java('simproxy.DemoLauncher','replay',str(s.folder/'missing'),label='replay-missing')
+        assert missing_replay.wait(timeout=30)==0,(s.folder/'replay-missing.log').read_text()
         cancelled=s.java('simproxy.DemoLauncher','record',str(s.folder/'cancelled'),'30',label='record-cancelled')
         wait_until(lambda:'RECORDING' in (s.folder/'record-cancelled.log').read_text(errors='replace'),description='cancel recorder ready')
         time.sleep(.2); s.call('abort')
@@ -64,6 +76,7 @@ def main():
                 'checks':['waits for enable','release ends recording','finite monotonic CSV and TCP metadata',
                           'actual motion recorded','distant replay requires explicit approach',
                           'same file replayed through Sunrise Java API','time limit and Enter save complete data',
+                          'extra telemetry saved; missing joints/wrench/calibration still record and replay',
                           'external cancellation and lost connection leave incomplete takes'],
                 'hardware':'not connected'}
         (s.folder/'report.json').write_text(json.dumps(report,indent=2))

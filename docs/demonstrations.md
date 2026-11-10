@@ -46,7 +46,7 @@ uv run --locked scripts/replay.py data/recordings/lab-01 --robot
 
 The same folder works with either backend. A real recording can be replayed in simulation without conversion, provided the simulated tool and robot-base/sink placement match it. The supplied basin pose is fixed in `simulation/scenes/sink.json`; it is not automatically repositioned from a recording.
 
-Replay normally requires the TCP within 10 mm and about 8 degrees of the first pose. `--approach` permits a slow direct PTP approach; check its clearance, particularly around the rim. Replay rejects incomplete/malformed data and a mismatching saved TCP. It follows Cartesian poses at up to 30 mm/s, retains recorded E1 for raw takes, and uses 2 mm blending. Waypoints are sampled at roughly 0.2 s of recorded time. **It replays the path, not original timing or forces**, and does not plan around collisions. Learned paths omit recorded joint constraints because their joint columns are placeholders.
+Replay normally requires the TCP within 10 mm and about 8 degrees of the first pose. `--approach` permits a slow direct PTP approach; check its clearance, particularly around the rim. Replay rejects incomplete/malformed data and a mismatching saved TCP. It follows Cartesian poses at up to 30 mm/s, retains recorded E1 for raw takes when joint 3 was available, and uses 2 mm blending. Without recorded joint 3, it follows the tool path without a recorded elbow constraint. Waypoints are sampled at roughly 0.2 s of recorded time. **It replays the path, not original timing or forces**, and does not plan around collisions. Learned paths omit recorded joint constraints because their joint columns are placeholders.
 
 ## Try KMP and TP-KMP
 
@@ -86,8 +86,23 @@ Sources: [manufacturer dimensions](https://pro.villeroy-boch.com/de/de/bw/p/O.no
 t,x,y,z,qx,qy,qz,qw,j1,j2,j3,j4,j5,j6,j7,fx,fy,fz,mx,my,mz,read_seconds
 ```
 
-Time is monotonic seconds; XYZ is metres in robot base; orientation is XYZW; joints are radians. Wrench is N/Nm, expressed in robot base with moment about TCP. During hand-guiding it includes the person's interaction, so it is not purely sponge pressure. `read_seconds` measures sequential SDK reads; they are not an atomic hardware snapshot.
+Time is monotonic seconds; XYZ is metres in robot base; orientation is XYZW; joints are radians. Wrench is N/Nm, expressed in robot base with moment about TCP. During hand-guiding it includes the person's interaction, so it is not purely sponge pressure. `read_seconds` measures the whole sampling pass, including extra readings when due; these are sequential SDK reads, not an atomic hardware snapshot.
 
-`metadata.json` records schema, source, completion, units/frames, active TCP, optional sink calibration, sample count and missed deadlines. Recording targets 50 Hz but achieved roughly 30–40 Hz in this Windows pilot; use the saved timestamps. Interrupted takes remain marked incomplete. Training leaves raw files unchanged and converts poses with `inverse(T_base_sink) * T_base_tcp`.
+`metadata.json` records schema, source, completion, units/frames, active TCP when available, optional sink calibration, sample count, missed deadlines and channel availability. New takes use **schema 2**: missing optional joint/wrench cells contain `NaN`, never fake zero readings. Readers still accept schema 1. Valid timestamps and tool poses remain required. KMP uses those poses, so missing joint/force telemetry does not prevent training. A missing calibration file no longer prevents recording, but calibration must be supplied before training in sink coordinates.
+
+`telemetry.jsonl` contains one JSON object per optional read: channel name, sample index, local read-start time, read duration and value (or null/error). Setup entries have sample `-1` and null time. Each channel is disabled for the rest of the take after its first exception, missing value, unavailable SDK method, invalid numeric value, or read exceeding 100 ms. The first slow read is retained; this is not a timeout for a permanently blocked SDK call. Disabled channels are listed in metadata and reported once in the terminal. Disk errors and lost required tool-pose/motion communication still stop the take and leave it marked incomplete.
+
+| Rate target | Saved channels |
+| --- | --- |
+| 50 Hz | Measured TCP pose, joints and TCP wrench; unavailable joints/wrench become NaN |
+| At most 10 Hz | Measured/external joint torques, commanded joints/TCP pose, measured flange pose, E1/Status/Turn, wrench inaccuracy, available wrench/torque SDK timestamps |
+| At most 1 Hz | Joint/drive temperatures, read-only safety/enabling/operation state, mastering state, active-motion flag, program override |
+| Once | Robot/controller names, joint and torque-sensor limits, active TCP offset/tool load, optional sink calibration, copies of application/connection/station files |
+
+Pose arrays use metres and XYZW, relative to robot base unless named as an offset; temperatures use the SDK's Celsius values. SDK timestamps are an internal, system-dependent nanosecond clock and must not be treated as the local recorder clock. Static configuration copies preserve what was supplied, not proof of the active lab station. Simulator-only gaps (such as temperatures and safety services) are explicitly unavailable rather than invented.
+
+Recording targets 50 Hz; use saved timestamps and missed-deadline counts to assess actual timing. Both data files flush at least every 0.5 s while reads return normally. Training leaves raw files unchanged and converts poses with `inverse(T_base_sink) * T_base_tcp`. Velocity/acceleration can be estimated later from the raw path and times; camera/video acquisition is not configured.
+
+To read the implementation: `Record.java` contains setup, the loop and stopping; `RecordingTelemetry.java` lists the SDK channels and rates; `OptionalTelemetry.java` handles optional reads and their error log. Hardware motion/stop errors are deliberately outside that optional handler.
 
 Validation details and pilot results are in [validation.md](validation.md).

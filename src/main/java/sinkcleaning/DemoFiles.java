@@ -24,7 +24,8 @@ public final class DemoFiles {
     public static JsonObject metadata(Path folder) throws IOException {
         try(Reader r=Files.newBufferedReader(folder.resolve("metadata.json"),StandardCharsets.UTF_8)) {
             JsonObject meta=JsonParser.parseReader(r).getAsJsonObject();
-            if(meta.get("schema").getAsInt()!=1 || !meta.get("complete").getAsBoolean())
+            int schema = meta.get("schema").getAsInt();
+            if((schema != 1 && schema != 2) || !meta.get("complete").getAsBoolean())
                 throw new IllegalArgumentException("Recording is incomplete or has an unsupported schema");
             if(!"robot_base".equals(meta.get("pose_frame").getAsString()))
                 throw new IllegalArgumentException("Replay needs poses expressed in robot_base");
@@ -33,7 +34,7 @@ public final class DemoFiles {
     }
 
     public static List<double[]> read(Path folder) throws IOException {
-        metadata(folder);
+        int schema = metadata(folder).get("schema").getAsInt();
         List<double[]> rows=new ArrayList<>();
         try(BufferedReader reader=Files.newBufferedReader(folder.resolve("samples.csv"),StandardCharsets.UTF_8)) {
             if(!HEADER.equals(reader.readLine())) throw new IllegalArgumentException("Unexpected recording columns");
@@ -42,7 +43,11 @@ public final class DemoFiles {
                 String[] cells=line.split(",",-1);
                 if(cells.length!=22) throw new IllegalArgumentException("Truncated recording row");
                 double[] row=new double[22];
-                for(int i=0;i<22;i++) { row[i]=Double.parseDouble(cells[i]); if(!Double.isFinite(row[i]))throw new IllegalArgumentException("Nonfinite sample"); }
+                for(int i=0;i<22;i++) {
+                    row[i]=Double.parseDouble(cells[i]);
+                    boolean missingOptional = schema == 2 && i >= 8 && i <= 20 && Double.isNaN(row[i]);
+                    if(!Double.isFinite(row[i]) && !missingOptional)throw new IllegalArgumentException("Nonfinite sample");
+                }
                 if(row[0]<0 || (!rows.isEmpty() && row[0]<=rows.get(rows.size()-1)[0]))throw new IllegalArgumentException("Timestamps must increase");
                 double norm=0; for(int i=4;i<8;i++)norm+=row[i]*row[i];
                 if(Math.abs(norm-1)>.01)throw new IllegalArgumentException("Invalid quaternion");

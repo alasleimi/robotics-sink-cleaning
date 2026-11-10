@@ -34,7 +34,8 @@ public final class Replay {
         List<Frame> frames=new ArrayList<>();
         for(double[] row:rows) {
             Frame f=new Frame(app.robot.getRootFrame(),Pose.transformation(Arrays.copyOfRange(row,1,8)));
-            if(!meta.has("learned_model"))f.setRedundancyInformation(app.robot,new LBRE1Redundancy().setE1(row[10]));
+            if(!meta.has("learned_model") && Double.isFinite(row[10]))
+                f.setRedundancyInformation(app.robot,new LBRE1Redundancy().setE1(row[10]));
             frames.add(f);
         }
         Frame current=app.robot.getCurrentCartesianPosition(app.tool.getDefaultMotionFrame(),app.robot.getRootFrame());

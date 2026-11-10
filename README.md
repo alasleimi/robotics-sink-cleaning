@@ -47,6 +47,8 @@ uv run --locked scripts/train_kmp.py data/examples/sink/demos data/recordings/my
 
 Recording opens the white bathroom washbasin scene and a small recording panel. Enable hand-guiding; the green target is selected automatically. Drag it, then release the checkbox, click **Stop & save**, or press Enter to save. The panel shows **Saved** and keeps the scene open until you close it. Both commands default to simulation; add `--robot` to use Sunrise on the actual arm. `--approach` allows a direct slow move to the first pose; it does not plan around the basin.
 
+Each take also saves optional SDK telemetry (joint torques, commanded positions, flange pose, temperature and controller status where available) in `telemetry.jsonl`. An unavailable optional channel is logged and disabled for that take; the tool path continues recording. Original recordings still load. The recorder is split into `Record.java` (workflow), `RecordingTelemetry.java` (readings) and `OptionalTelemetry.java` (missing/slow readings).
+
 The [short demonstration guide](docs/demonstrations.md) covers hardware use, controls, sink calibration, replay and KMP/TP-KMP. Five scripted simulator takes and their learned paths are included in `data/examples/sink`. Hardware recording/replay has not been tested in the lab.
 
 ## Where things belong

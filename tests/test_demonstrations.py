@@ -36,6 +36,21 @@ def test_reject_partial_invalid_and_reversed_time(tmp_path):
     with pytest.raises(ValueError,match='Incomplete'): load(tmp_path)
 
 
+def test_optional_telemetry_missing_still_trains_but_required_pose_must_exist(tmp_path):
+    rows=fixture_demo(tmp_path)
+    meta=json.loads((tmp_path/'metadata.json').read_text())
+    meta['schema']=2
+    (tmp_path/'metadata.json').write_text(json.dumps(meta))
+    rows[:,8:21]=np.nan
+    np.savetxt(tmp_path/'samples.csv',rows,delimiter=',',header=HEADER,comments='')
+    loaded,_=load(tmp_path)
+    _,poses=resample(loaded)
+    assert np.all(np.isfinite(poses))
+    rows[4,1]=np.nan
+    np.savetxt(tmp_path/'samples.csv',rows,delimiter=',',header=HEADER,comments='')
+    with pytest.raises(ValueError,match='Nonfinite'):load(tmp_path)
+
+
 def test_handguiding_enable_release_and_velocity_limited_target(robot):
     from server import Engine
     engine=Engine(robot)

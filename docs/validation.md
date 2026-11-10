@@ -1,5 +1,17 @@
 # Validation history
 
+## Optional demonstration telemetry and recorder cleanup — 10 November 2026
+
+Split the recorder into the workflow (`Record`), an explicit SDK channel list (`RecordingTelemetry`), and optional-read handling (`OptionalTelemetry`). Native hand-guiding and the shared real/simulator loop remain. New takes keep the 22 CSV columns and use schema 2 to allow NaN in missing joint/wrench cells; measured tool pose and timing remain required. Extra readings and per-channel timing/errors go to `telemetry.jsonl`. Setup configuration is copied when available. Optional SDK failures disable only that channel; reads over 100 ms are retained once then disabled. A blocked SDK call still relies on the SDK returning; this is not a hard timeout.
+
+Local Windows validation passed:
+
+- **25 Python checks and 16 Java tests**: legacy/new formats, missing optional values, rejection of missing required pose, unavailable SDK methods, null/invalid values, disabling slow channels, and preservation of disk-write failures.
+- Full recorder/replayer integration (`.tools/sim-lu7ecw8t/report.json`): extended telemetry, original recording/replay, switch/Enter/time stopping, forced missing joint/wrench/torque APIs and missing calibration, successful pose-only replay, cancellation and connection loss. Faults were injected only into the simulator's mocked SDK methods; the actual recorder executed unchanged.
+- KMP/TP-KMP training plus raw and learned path replay passed (`.tools/sim-9b361gxr/learning-report.json`). A separate training run on schema-2 copies of all five examples with every joint/wrench cell set to NaN produced valid KMP and TP-KMP predictions (`.tools/optional-kmp-ibqr4lba`).
+
+No real robot was connected. Real sensor availability/rates remain unverified. Simulator temperature/safety/commanded-pose channels that it does not implement are reported unavailable, not filled with guessed values. The new code's cross-platform CI is pending.
+
 ## Recording controls and failure handling — 10 November 2026
 
 The recording panel now selects the green target automatically. Releasing hand-guiding, clicking **Stop & save**, or pressing Enter saves the take and leaves the scene open. **Close simulator** closes it explicitly. The actual Sunrise Java recorder is shared by both backends; the simulator UI supplies the same stop flag as the console.
@@ -10,7 +22,7 @@ Windows validation passed: **24 Python checks**, **11 Java tests**, the original
 
 The reported green-sphere drop was **not reproduced** in two observed double-click tests; target and robot poses stayed unchanged. Automatic selection removes the need for that gesture, but does not establish the original cause. No hardware was connected: controller communication, actual enabling switches, TCP/load configuration and recording timing still need a lab check.
 
-The preceding revision's [CI run](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42878507535) timed out in the Windows negative replay-start check; its cause is unconfirmed. That check passes locally, and now includes the Java log in timeout failures. [Cross-platform validation of this update](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42882972430), code revision `f1a8530`, is running.
+The preceding revision's [CI run](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42878507535) timed out in the Windows negative replay-start check; its cause is unconfirmed. That check passes locally, and now includes the Java log in timeout failures. [Cross-platform validation of this update](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42882972430), code revision `f1a8530`, passed on Windows, Intel Mac and Apple Silicon Mac.
 
 ## Responsive mouse teaching — 10 November 2026
 

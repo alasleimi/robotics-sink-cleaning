@@ -11,15 +11,18 @@ HEADER="t,x,y,z,qx,qy,qz,qw,j1,j2,j3,j4,j5,j6,j7,fx,fy,fz,mx,my,mz,read_seconds"
 def load(folder):
     folder=Path(folder)
     meta=json.loads((folder/"metadata.json").read_text(encoding="utf-8"))
-    if meta.get("schema")!=1 or not meta.get("complete"):
+    if meta.get("schema") not in (1,2) or not meta.get("complete"):
         raise ValueError(f"Incomplete or unsupported recording: {folder}")
     if meta.get("pose_frame")!="robot_base":
         raise ValueError("Expected robot-base poses")
     with (folder/"samples.csv").open() as f:
         if f.readline().strip()!=HEADER: raise ValueError("Unexpected CSV columns")
     rows=np.loadtxt(folder/"samples.csv",delimiter=",",skiprows=1,ndmin=2)
-    if rows.shape[0]<2 or rows.shape[1]!=22 or not np.all(np.isfinite(rows)):
+    if rows.shape[0]<2 or rows.shape[1]!=22:
         raise ValueError("Need at least two finite, complete samples")
+    required = rows if meta["schema"] == 1 else rows[:, list(range(8))+[21]]
+    if not np.all(np.isfinite(required)) or np.any(np.isinf(rows)):
+        raise ValueError("Nonfinite required sample")
     if np.any(np.diff(rows[:,0])<=0) or rows[0,0]<0: raise ValueError("Timestamps must increase")
     if not np.allclose(np.linalg.norm(rows[:,4:8],axis=1),1,atol=.005): raise ValueError("Invalid quaternion")
     return rows,meta

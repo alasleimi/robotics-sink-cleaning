@@ -7,6 +7,25 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class DemoFilesTest {
+    @Test public void missingOptionalValuesStillAllowPathButNeverMissingPose() throws Exception {
+        Path folder = Files.createTempDirectory("optional-demo-");
+        JsonObject meta = new JsonObject();
+        meta.addProperty("schema", 2); meta.addProperty("complete", true);
+        meta.addProperty("pose_frame", "robot_base");
+        DemoFiles.metadata(folder, meta);
+        double[] row = new double[22];
+        row[7] = 1;
+        java.util.Arrays.fill(row, 8, 21, Double.NaN);
+        String first = DemoFiles.csv(row);
+        row[0] = .02;
+        Files.write(folder.resolve("samples.csv"), (DemoFiles.HEADER + "\n" + first + "\n" + DemoFiles.csv(row) + "\n").getBytes(StandardCharsets.UTF_8));
+        assertEquals(2, DemoFiles.read(folder).size());
+        row[1] = Double.NaN;
+        Files.write(folder.resolve("samples.csv"), (DemoFiles.HEADER + "\n" + first + "\n" + DemoFiles.csv(row) + "\n").getBytes(StandardCharsets.UTF_8));
+        try { DemoFiles.read(folder); fail("Missing measured pose accepted"); }
+        catch (IllegalArgumentException expected) { assertEquals("Nonfinite sample", expected.getMessage()); }
+    }
+
     @Test public void realRobotFormatAndInvalidTimestamp() throws Exception {
         Path folder=Files.createTempDirectory("demo-format-");
         JsonObject meta=new JsonObject();meta.addProperty("schema",1);meta.addProperty("complete",true);
