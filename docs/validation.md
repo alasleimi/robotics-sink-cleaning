@@ -6,11 +6,11 @@ The recording panel now selects the green target automatically. Releasing hand-g
 
 Checked KUKA's bundled javadocs and corrected an adapter mismatch: `await()` and `validate()` now throw the SDK's cancellation/invalid-command exceptions. Previously cancellation could incorrectly mark a take complete. Metadata is now marked complete only after the CSV has closed successfully and motion cleanup has succeeded.
 
-Windows validation passed: **24 Python checks**, **11 Java tests**, the original exercise/contact suite (`.tools/sim-t6ep7cxz/report.json`), and recorder/replayer integration (`.tools/sim-6do5apjd/report.json`). The latter also verifies that external cancellation and connection loss leave an incomplete take. Native GUI clicking confirmed that releasing the checkbox saves while both windows remain open, and **Close simulator** ends the session.
+Windows validation passed: **24 Python checks**, **11 Java tests**, the original exercise/contact suite (`.tools/sim-t6ep7cxz/report.json`), and recorder/replayer integration (`.tools/sim-6do5apjd/report.json`). The latter also verifies that external cancellation and connection loss leave an incomplete take. Native GUI clicking confirmed that releasing the checkbox and **Stop & save** each save while both windows remain open, and **Close simulator** ends the session. The button test saved 584 samples in `.tools/recording-stop-button-check`.
 
 The reported green-sphere drop was **not reproduced** in two observed double-click tests; target and robot poses stayed unchanged. Automatic selection removes the need for that gesture, but does not establish the original cause. No hardware was connected: controller communication, actual enabling switches, TCP/load configuration and recording timing still need a lab check.
 
-The preceding revision's [CI run](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42878507535) timed out in the Windows negative replay-start check; its cause is unconfirmed. That check passes locally, and now includes the Java log in timeout failures. Cross-platform validation of this update is pending.
+The preceding revision's [CI run](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42878507535) timed out in the Windows negative replay-start check; its cause is unconfirmed. That check passes locally, and now includes the Java log in timeout failures. [Cross-platform validation of this update](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/42882972430), code revision `f1a8530`, is running.
 
 ## Responsive mouse teaching — 10 November 2026
 
