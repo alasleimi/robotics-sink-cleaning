@@ -9,8 +9,8 @@ uv run --locked scripts/record.py data/recordings/take-01
 ```
 
 1. Wait for `RECORDING` in the terminal. The arm starts where it is; recording does not command a preset posture.
-2. Check **Enable hand-guiding** in the teaching panel. Click **Follow scene TeachTarget**, then double-left-click the green sphere in MuJoCo. Hold **Ctrl + Shift + right-drag** for horizontal movement, **Ctrl + right-drag** for vertical movement, or **Ctrl + left-drag** for rotation. Dragging without Ctrl moves the camera. The panel's joint targets also work; direct mouse forces work after releasing the teaching target.
-3. Uncheck **Enable hand-guiding**, or press Enter in the terminal, to finish and save. To discard a take, delete its directory yourself.
+2. Check **Enable hand-guiding** in the recording panel. It selects the green sphere automatically; no double-click is needed. Hold **Ctrl + Shift + right-drag** for horizontal movement, **Ctrl + right-drag** for vertical movement, or **Ctrl + left-drag** for rotation. Dragging without Ctrl moves the camera.
+3. Uncheck **Enable hand-guiding**, click **Stop & save**, or press Enter to finish. The panel shows **Saved** and leaves the scene open. Use **Close simulator** when finished; closing the panel during recording saves first. Closing the MuJoCo viewer directly during an active take disconnects the recorder and leaves it incomplete. To discard a take, delete its directory yourself.
 
 The first sample may precede enabling. Training trims stationary ends. `--seconds 10` sets a maximum duration; `--headless` hides windows; `--scene empty` selects free space.
 
@@ -25,6 +25,8 @@ uv run --locked scripts/record.py data/recordings/lab-01 --robot --sink calibrat
 This uses `HRCMotions.handGuiding()` from the bundled KUKA API, with 0.3 rad/s joint and 100 mm/s Cartesian guiding limits. Use the lab's configured guiding/enabling device; releasing the guiding switch or pressing Enter ends the take. It uses the existing controller address and `EXERCISE_TOOL`, without running `goFront()` or the course gravity-compensation loop.
 
 Before the first lab take, check the actual sponge TCP/load and hand-guiding configuration with Arne. The current XML describes the course tool. The recorder saves that XML and the active TCP, but cannot confirm the physical attachment. No hardware connection has been tested.
+
+Simulation executes the same Java recording loop, coordinate conversion, CSV writing and completion checks. Only device/controller access is intercepted; the hardware classpath excludes the adapter. Tests cover normal stopping, replay, cancellation and a lost simulator connection. They cannot verify controller connectivity, the physical guiding switch, actual telemetry timing, or tool calibration. The first lab check should be a short recording in clear space: enable guiding, move a little, release, and inspect the saved poses/joints. Successful simulation is not a guarantee of bug-free hardware operation.
 
 `calibration.json` contains the measured sink pose in robot-base coordinates:
 

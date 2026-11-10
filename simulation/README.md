@@ -11,7 +11,7 @@ This builds the simulator runtime, opens an owned robosuite/MuJoCo viewer, and c
 ## Teach first, then replay
 
 1. Start `exercise 01` and let the initial front movement finish.
-2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget** and double-left-click the green sphere in MuJoCo. **Ctrl + Shift + right-drag** moves it horizontally; **Ctrl + right-drag** moves it vertically; **Ctrl + left-drag** rotates it. Dragging without Ctrl moves the camera. Direct mouse forces on the arm are also available after releasing the teaching target.
+2. In **Simulation — teach joints / apply force**, click **Read current joints**, change joint angles, then **Move teaching target**. Wait for the arm to settle. Alternatively, click **Follow scene TeachTarget**, which selects the green sphere automatically. **Ctrl + Shift + right-drag** moves it horizontally; **Ctrl + right-drag** moves it vertically; **Ctrl + left-drag** rotates it. Dragging without Ctrl moves the camera. Direct mouse forces on the arm are also available after releasing the teaching target.
 3. In Arne's **RobotControl**, press **SAVE_FRAME** and **SAVE_JOINT_POS**. The first names are **F0** and **J0**. Repeat at two other reachable poses to save F1/J1 and F2/J2.
 4. Close Exercise 1, then run `uv run --locked scripts/run.py exercise 02`.
 
@@ -41,10 +41,10 @@ Exercises 01, 05a, 05b, and 06 intentionally loop until the session is closed. P
 
 - Joint PTP/home, Cartesian PTP, LIN, relative LIN, MotionBatch, move/moveAsync, positionHold.
 - Scalar relative joint velocity/acceleration, Cartesian velocity/acceleration, queued PTP/LIN blending.
-- Await/timeout, completion/error state, pause/resume, cancel/abort, force and joint-torque break conditions with AND/OR.
+- Await/timeout, completion/error state, pause/resume, cancel/abort, force and joint-torque break conditions with AND/OR. As in the bundled SDK, `await()` and `validate()` throw `CancelledException` after cancellation and `CommandInvalidException` on invalid motions; cancelled containers are finished but `hasError()` remains false.
 - Actual joint/TCP/flange state, measured motor torque, tool-wrench feedback, joint impedance and Cartesian impedance.
 - Teaching files, Arne's FileLogger, and the project demonstration recorder/replayer. XYZ translations use mm in Java and metres in the bridge; angles use radians except the degree-formatted `.frm` pose line.
-- `HRCMotions.handGuiding()` with joint/Cartesian guiding velocity limits: enable in the teaching panel; releasing ends the motion. Zero-stiffness dynamics and opposing damping approximate hand-guiding. Custom guiding joint-limit settings are rejected; controller safety services are not simulated.
+- `HRCMotions.handGuiding()` with joint/Cartesian guiding velocity limits: enable in the recording panel; releasing ends the motion and saves the take, while the viewer stays open. Zero-stiffness dynamics and opposing damping approximate hand-guiding. Custom guiding joint-limit settings are rejected; controller safety services are not simulated.
 - E1-constrained IK, Cartesian PTP and LIN; Status selects the PTP configuration. Frames without redundancy retain starting E1/Status. LIN interpolates E1 and retains its starting Status. Turn is stored but ignored for the iiwa's joints, which cannot rotate beyond 180 degrees. See [E1 details and example](../docs/e1.md).
 
 Use `--headless --fast` for automated runs, or `--data PATH` for a separate teaching set. `uv run --locked scripts/check_simulation.py` runs original entry points plus physical assertions using temporary data. It creates and closes its own simulator.

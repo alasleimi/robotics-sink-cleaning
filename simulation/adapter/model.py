@@ -180,6 +180,14 @@ class Model:
         self.d.mocap_pos[self.target_mocap] = pose[:3]
         self.d.mocap_quat[self.target_mocap] = np.array(pose[3:])[[3,0,1,2]]
 
+    def select_target(self):
+        if self.viewer:
+            with self.viewer.lock():
+                perturb = self.viewer.perturb
+                perturb.active = perturb.active2 = 0
+                perturb.select = self.m.body("TeachTarget").id
+                perturb.localpos[:] = 0
+
     def call(self, name, *args):
         if name == "forward":
             q, which = args

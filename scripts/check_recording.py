@@ -1,5 +1,6 @@
 """End-to-end checks of the actual Java recorder/replayer; never uses hardware."""
 import json
+import subprocess
 import time
 import numpy as np
 from sim_session import Session
@@ -29,7 +30,11 @@ def main():
         assert np.ptp(rows[:,8])>.08
         before=np.array(s.call('state')['q'])
         refused=s.java('simproxy.DemoLauncher','replay',str(folder),label='replay-no-approach')
-        assert refused.wait(timeout=30)!=0
+        try:
+            assert refused.wait(timeout=30)!=0
+        except subprocess.TimeoutExpired as error:
+            raise AssertionError('Replay start check timed out. Java output:\n'+
+                                 (s.folder/'replay-no-approach.log').read_text(errors='replace')) from error
         assert 'Guide the TCP within' in (s.folder/'replay-no-approach.log').read_text()
         np.testing.assert_allclose(s.call('state')['q'],before,atol=.004)
         p=s.java('simproxy.DemoLauncher','replay',str(folder),'--approach',label='replay')
@@ -44,10 +49,22 @@ def main():
         time.sleep(.2); entered.stdin.write(b'\n'); entered.stdin.flush()
         assert entered.wait(timeout=10)==0,(s.folder/'record-enter.log').read_text()
         load(s.folder/'enter')
+        cancelled=s.java('simproxy.DemoLauncher','record',str(s.folder/'cancelled'),'30',label='record-cancelled')
+        wait_until(lambda:'RECORDING' in (s.folder/'record-cancelled.log').read_text(errors='replace'),description='cancel recorder ready')
+        time.sleep(.2); s.call('abort')
+        assert cancelled.wait(timeout=10)!=0
+        assert not json.loads((s.folder/'cancelled/metadata.json').read_text())['complete']
+        s.call('resume')
+        disconnected=s.java('simproxy.DemoLauncher','record',str(s.folder/'disconnected'),'30',label='record-disconnected')
+        wait_until(lambda:'RECORDING' in (s.folder/'record-disconnected.log').read_text(errors='replace'),description='disconnect recorder ready')
+        time.sleep(.2); s.bridge.terminate(); s.bridge.wait(timeout=5)
+        assert disconnected.wait(timeout=10)!=0
+        assert not json.loads((s.folder/'disconnected/metadata.json').read_text())['complete']
         report={'recorded_samples':len(rows),'guidance':'KUKA API through simulator',
                 'checks':['waits for enable','release ends recording','finite monotonic CSV and TCP metadata',
                           'actual motion recorded','distant replay requires explicit approach',
-                          'same file replayed through Sunrise Java API','time limit and Enter save complete data'],
+                          'same file replayed through Sunrise Java API','time limit and Enter save complete data',
+                          'external cancellation and lost connection leave incomplete takes'],
                 'hardware':'not connected'}
         (s.folder/'report.json').write_text(json.dumps(report,indent=2))
         print('Record/replay checks passed:',s.folder/'report.json',flush=True)

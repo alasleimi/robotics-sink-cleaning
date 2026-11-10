@@ -23,6 +23,11 @@ public final class Record {
     }
 
     static void record(String[] args) throws Exception {
+        record(args,new AtomicBoolean());
+    }
+
+    /** Same recording loop for the CLI and simulator's Stop & save button. */
+    public static void record(String[] args, AtomicBoolean stop) throws Exception {
         if (args.length<1) throw new IllegalArgumentException("Record OUTPUT_DIRECTORY [SECONDS] [SINK_JSON]");
         Path folder=Paths.get(args[0]).toAbsolutePath();
         double seconds=args.length>1 ? Double.parseDouble(args[1]) : 0;
@@ -55,7 +60,6 @@ public final class Record {
         meta.add("tcp",new Gson().toJsonTree(Pose.pose(Transformation.of(
             app.tool.getDefaultMotionFrame().getTransformationProvider().getTransformation()))));
         DemoFiles.metadata(folder,meta);
-        AtomicBoolean stop=new AtomicBoolean();
         Thread input=new Thread(() -> {
             try { if(new BufferedReader(new InputStreamReader(System.in)).readLine()!=null)stop.set(true); }
             catch(IOException ignored) { /* A closed console does not discard a timed/headless take. */ }
@@ -64,32 +68,35 @@ public final class Record {
         input.start();
         IMotionContainer guidance=null;
         int count=0, gaps=0;
+        boolean complete=false;
         long start=System.nanoTime(), next=start;
-        try (BufferedWriter writer=Files.newBufferedWriter(folder.resolve("samples.csv"),StandardCharsets.UTF_8)) {
-            writer.write(DemoFiles.HEADER); writer.newLine(); writer.flush();
-            guidance=app.robot.moveAsync(HRCMotions.handGuiding().setJointVelocityLimit(.3).setCartVelocityLimit(100));
-            System.out.println("RECORDING " + folder + " — guide the arm; Enter or releasing the guiding switch ends this take.");
-            while (!stop.get() && !guidance.isFinished() && (seconds==0 || (System.nanoTime()-start)*1e-9<seconds)) {
-                long began=System.nanoTime();
-                Frame frame=app.robot.getCurrentCartesianPosition(app.tool.getDefaultMotionFrame(),app.robot.getRootFrame());
-                double[] pose=Pose.pose(Transformation.of(frame.getTransformationProvider().getTransformation()));
-                double[] joints=app.robot.getCurrentJointPosition().get();
-                ForceSensorData wrench=app.robot.getExternalForceTorque(app.tool.getDefaultMotionFrame(),app.robot.getRootFrame());
-                double[] row=new double[22];
-                row[0]=(began-start)*1e-9;
-                System.arraycopy(pose,0,row,1,7); System.arraycopy(joints,0,row,8,7);
-                for(int i=0;i<3;i++) { row[15+i]=wrench.getForce().get(i); row[18+i]=wrench.getTorque().get(i); }
-                row[21]=(System.nanoTime()-began)*1e-9;
-                writer.write(DemoFiles.csv(row)); writer.newLine();
-                if (++count%50==0) writer.flush();
-                next+=20_000_000L;
-                long remaining=next-System.nanoTime();
-                if (remaining>0) LockSupport.parkNanos(remaining);
-                else { gaps++; next=System.nanoTime(); }
+        try {
+            try (BufferedWriter writer=Files.newBufferedWriter(folder.resolve("samples.csv"),StandardCharsets.UTF_8)) {
+                writer.write(DemoFiles.HEADER); writer.newLine(); writer.flush();
+                guidance=app.robot.moveAsync(HRCMotions.handGuiding().setJointVelocityLimit(.3).setCartVelocityLimit(100));
+                System.out.println("RECORDING " + folder + " — guide the arm; Enter or releasing the guiding switch ends this take.");
+                while (!stop.get() && !guidance.isFinished() && (seconds==0 || (System.nanoTime()-start)*1e-9<seconds)) {
+                    long began=System.nanoTime();
+                    Frame frame=app.robot.getCurrentCartesianPosition(app.tool.getDefaultMotionFrame(),app.robot.getRootFrame());
+                    double[] pose=Pose.pose(Transformation.of(frame.getTransformationProvider().getTransformation()));
+                    double[] joints=app.robot.getCurrentJointPosition().get();
+                    ForceSensorData wrench=app.robot.getExternalForceTorque(app.tool.getDefaultMotionFrame(),app.robot.getRootFrame());
+                    double[] row=new double[22];
+                    row[0]=(began-start)*1e-9;
+                    System.arraycopy(pose,0,row,1,7); System.arraycopy(joints,0,row,8,7);
+                    for(int i=0;i<3;i++) { row[15+i]=wrench.getForce().get(i); row[18+i]=wrench.getTorque().get(i); }
+                    row[21]=(System.nanoTime()-began)*1e-9;
+                    writer.write(DemoFiles.csv(row)); writer.newLine();
+                    if (++count%50==0) writer.flush();
+                    next+=20_000_000L;
+                    long remaining=next-System.nanoTime();
+                    if (remaining>0) LockSupport.parkNanos(remaining);
+                    else { gaps++; next=System.nanoTime(); }
+                }
+                guidance.validate();
+                if(count<2) throw new IllegalStateException("No useful recording; check the hand-guiding enabling switch.");
             }
-            guidance.validate();
-            if(count<2) throw new IllegalStateException("No useful recording; check the hand-guiding enabling switch.");
-            meta.addProperty("complete",true);
+            complete=true; // Only after the writer has closed successfully.
         } finally {
             try {
                 if(guidance!=null && !guidance.isFinished()) {
@@ -97,9 +104,10 @@ public final class Record {
                     try { guidance.await(); } catch(CancelledException expected) { /* Enter/time limit intentionally cancelled guidance. */ }
                 }
             } catch(RuntimeException error) {
-                meta.addProperty("complete",false);
+                complete=false;
                 throw error;
             } finally {
+                meta.addProperty("complete",complete);
                 meta.addProperty("samples",count); meta.addProperty("missed_deadlines",gaps);
                 meta.addProperty("duration_s",(System.nanoTime()-start)*1e-9);
                 DemoFiles.metadata(folder,meta);

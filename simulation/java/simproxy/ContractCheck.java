@@ -112,7 +112,10 @@ public final class ContractCheck {
       IMotionContainer cancelled =
           robot.moveAsync(ptp(new JointPosition(front)).setJointVelocityRel(.1));
       cancelled.cancel();
-      cancelled.await();
+      try {cancelled.await(); throw new AssertionError("await must report cancellation");}
+      catch(com.kuka.roboticsAPI.executionModel.CancelledException expectedCancellation) {}
+      try {cancelled.validate(); throw new AssertionError("validate must report cancellation");}
+      catch(com.kuka.roboticsAPI.executionModel.CancelledException expectedCancellation) {}
       require(cancelled.isFinished() && !cancelled.hasError(), "Cancel status");
       SunriseConnector.goFront();
       JointImpedanceControlMode joint = new JointImpedanceControlMode(30, 30, 30, 30, 30, 30, 30);
@@ -127,7 +130,8 @@ public final class ContractCheck {
       require(delta > .01, "Physical force deforms compliant joints");
       bridge.call("force", "force", new double[3]);
       hold.cancel();
-      hold.await();
+      try {hold.await(); throw new AssertionError("Cancelled hold must report cancellation");}
+      catch(com.kuka.roboticsAPI.executionModel.CancelledException expectedCancellation) {}
       SunriseConnector.goFront();
       ForceCondition force = ForceCondition.createNormalForceCondition(null, CoordinateAxis.Y, 10);
       IMotionContainer broken =

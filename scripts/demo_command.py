@@ -1,8 +1,10 @@
 """Shared launch plumbing for the two small record/replay commands."""
 import argparse
+import json
 from pathlib import Path
 import os
 import subprocess
+import time
 
 from common import ROOT, gradle, load_config, local_path
 from sim_session import Session
@@ -36,5 +38,17 @@ def run(command):
     else:
         with Session(headless=args.headless,scene=args.scene) as session:
             process=session.java("simproxy.DemoLauncher",command,*java_args,headless=args.headless,interactive=True)
-            result=process.wait()
+            while process.poll() is None and session.bridge.poll() is None:
+                time.sleep(.1)
+            if process.poll() is None:
+                # Let an active recorder flush its partial file if the viewer
+                # was closed, then close the remaining Java window.
+                try: process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.terminate(); process.wait(timeout=5)
+                metadata=folder/"metadata.json"
+                saved=command=="record" and metadata.exists() and json.loads(metadata.read_text()).get("complete",False)
+                result=0 if saved else 1
+            else:
+                result=process.returncode
             if result: raise SystemExit(result)

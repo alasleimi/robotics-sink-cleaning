@@ -80,7 +80,8 @@ public final class ExerciseRequirementsCheck {
       invalid.setRedundancyInformation(robot, new LBRE1Redundancy().setE1(4));
       double[] before = robot.getCurrentJointPosition().get();
       IMotionContainer rejected = tool.moveAsync(ptp(invalid));
-      rejected.await();
+      try {rejected.await(); throw new AssertionError("await must report invalid commands");}
+      catch(com.kuka.roboticsAPI.executionModel.CommandInvalidException expected) {}
       require(rejected.hasError() && rejected.getErrorMessage().contains("E1"), "Invalid E1 is an explicit motion error");
       near(before, robot.getCurrentJointPosition().get(), .003, "Rejected E1 causes no motion");
 

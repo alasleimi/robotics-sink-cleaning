@@ -438,6 +438,7 @@ class Engine:
             if self.active and not all(x == 0 for x in self.active["spec"].get("control", {}).get("stiffness", [1])):
                 raise ValueError("Use scene teaching in Exercise 1 or abort active motion first")
             self.model.set_target(self.state["tcp"])
+            self.model.select_target()
             self.follow_target = True
         elif action == "releaseTeach":
             self.manual = None

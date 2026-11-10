@@ -7,6 +7,9 @@ import com.kuka.roboticsAPI.RoboticsAPIContext;
 import com.kuka.roboticsAPI.applicationModel.*;
 import com.kuka.roboticsAPI.controllerModel.sunrise.*;
 import com.kuka.roboticsAPI.deviceModel.*;
+import com.kuka.roboticsAPI.executionModel.CancelledException;
+import com.kuka.roboticsAPI.executionModel.CommandInvalidException;
+import com.kuka.roboticsAPI.executionModel.ICommandContainer;
 import com.kuka.roboticsAPI.geometricModel.*;
 import com.kuka.roboticsAPI.geometricModel.math.Transformation;
 import com.kuka.roboticsAPI.geometricModel.math.Vector;
@@ -306,6 +309,14 @@ final class SimulatorRuntime implements AutoCloseable {
         return !java.util.Set.of("queued", "running").contains(s.get("state").getAsString());
       }
 
+      void validate(ICommandContainer container) {
+        JsonObject s=status();
+        if("cancelled".equals(s.get("state").getAsString()))
+          throw new CancelledException(container,"Simulator motion " + id + " was cancelled");
+        if("error".equals(s.get("state").getAsString()))
+          throw new CommandInvalidException(container,s.get("error").getAsString());
+      }
+
       void await(long nanos) throws InterruptedException, TimeoutException {
         long start = System.nanoTime();
         while (!done(status())) {
@@ -326,6 +337,7 @@ final class SimulatorRuntime implements AutoCloseable {
                       i.getArguments().length == 0
                           ? -1
                           : ((TimeUnit) i.getArgument(1)).toNanos(i.getArgument(0)));
+                  h.validate((ICommandContainer)i.getMock());
                   return null;
                 case "isFinished":
                   return h.done(h.status());
@@ -335,8 +347,7 @@ final class SimulatorRuntime implements AutoCloseable {
                   JsonElement e = h.status().get("error");
                   return e.isJsonNull() ? null : e.getAsString();
                 case "validate":
-                  if ("error".equals(h.status().get("state").getAsString()))
-                    throw new IllegalStateException(h.status().get("error").getAsString());
+                  h.validate((ICommandContainer)i.getMock());
                   return null;
                 case "cancel":
                   bridge.call("cancel", "id", id);
