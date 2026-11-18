@@ -4,6 +4,7 @@
 - `source/`: original Task 9/10/11, connector and tool XML snapshots, not compiled by Gradle.
 - `classification.json`: reviewable decisions; the half-arcs are confirmed edge cleaning.
 - `analysis/`: per-file checks, retained intervals, sink estimate and plots.
+- `analysis/audit/`: independent band clustering, temporal split fits, 3D CAD distances, approach flags and contact-offset sensitivity; see [audit conclusions](../../../docs/lab-audit.md).
 - `models/`: PGLfD KMP and TP-KMP parameters/predictions for five cleaning classes.
 
 The seven early recordings (17:37–17:51) are confirmed tests on a different robot, excluded from sink fitting and learning. Their robot/tool are unknown; Cartesian reconstructions using the sink robot are illustrative only.

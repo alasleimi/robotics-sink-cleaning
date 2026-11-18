@@ -1,5 +1,11 @@
 # Validation history
 
+## Classification and placement audit — 18 November 2026
+
+Added `scripts/audit_lab.py` and the [data audit](lab-audit.md). It re-reads original recordings, uses measured Task 11 TCP where available, clusters motion bands without a sink transform, checks all directions and compares earlier/later sink fits. The two bowl loops provide separate 3D CAD-surface evidence. Multi-start orientation fits and tool-offset sensitivity expose ambiguity rather than claiming exact calibration. Raised endpoint/approach candidates and the displaced `18-40-38` take are flagged; no training interval, learned model or scene pose was silently changed. Ala is unsure whether the later sink/base/sponge setup changed.
+
+The audit completed and its overview/interval plots were visually inspected. All 34 Python/PGLfD checks passed locally, including analytic triangle-distance cases and existing raw-data/FK/model checks. Raw files, learned models and scene pose were verified unchanged. The preceding baseline `49ca586` is now confirmed successful on Windows, Intel Mac and Apple Silicon CI ([run 44245523941](https://github.com/alasleimi/robotics-sink-cleaning/actions/runs/44245523941)); that is separate from this audit's pending CI.
+
 ## Real lab recordings, NAURU and per-motion learning — 18 November 2026
 
 Imported 24 Task 9/11 JSON files without changing the Downloads originals. Fourteen cleaning takes yield five motion classes and ten final KMP/TP-KMP paths. Ala confirmed that half-arcs are edge cleaning and the seven early takes were tests on a different robot. Those seven were already excluded; sink placement and learned models are unchanged. Inner/outer bands remain geometric interpretations. The supplied STEP, visual mesh, concave collision surface, raw data, source snapshot, classifications and saved models are in the repository; see [lab recordings](lab-recordings.md).

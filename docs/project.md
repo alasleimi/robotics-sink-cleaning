@@ -15,7 +15,9 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Demonstration recording and replay | Ala/Ecem supplied 24 real Task 9/11 recordings from 11 November; Task 10 hardware replay reported. New simulator viewer preserves measured joints/timestamps | Review the [classified lab recordings](lab-recordings.md); separate native hand-guiding recorder remains hardware-untested |
 | KMP and TP-KMP baseline | Both trained with PGLfD for five motion classes from 14 real recordings; all ten final paths pass simulated IK | Review 3–6 cm mean held-out errors; collect more consistent takes and measure sink/TCP calibration |
 | PushWiper/adaptive wiping | Reading pending | Summarise their inputs, outputs, and feedback |
-| Sink reconstruction | Supplied NAURU STEP imported; pose estimated from rim sweeps, not measured | Confirm placement and sponge contact offset in lab |
+| Sink reconstruction | NAURU STEP placement passes retrospective temporal-split/bowl checks at centimetre scale; exact calibration unresolved | Measure three rim points and sponge contact offset; see [audit](lab-audit.md) |
+
+The [18 November data audit](lab-audit.md) supports all 12 edge-band/direction labels and the two lower bowl loops. Some selected intervals include approach; `18-40-38` is an outer-band outlier. Ala is unsure whether the later setup changed. Existing learning outputs remain the baseline, not validated contact trajectories.
 
 Owners and dates have not been assigned. Keep ideas with their evidence, current conclusion, and next action here or in a linked short note.
 

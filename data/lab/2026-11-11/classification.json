@@ -2,6 +2,13 @@
   "session": "2026-11-11, Ala and Ecem",
   "label_status": "Edge cleaning confirmed by Ala. Inner/outer bands, bowl loops and interval boundaries inferred from geometry; reviewable hypotheses.",
   "early_setup_status": "Ala confirmed on 18 November: the seven 17:37-17:51 recordings were tests on a different robot before moving to the sink setup. That robot's model and tool are unknown; Cartesian reconstructions using the sink robot are illustrative only.",
+  "audit": {
+    "report": "analysis/audit/report.json",
+    "band_result": "All 12 edge sweeps form the original two bands without using the sink fit; directions also agree. This is retrospective geometric support, not contact ground truth.",
+    "interval_status": "Provisional: Y-extrema intervals include some approach or raised endpoints. Diagnostic alternatives are saved in the audit; original models/intervals retained for comparison.",
+    "setup_status": "Ala is unsure whether the later sink/base/sponge setup changed between takes.",
+    "priority_review": ["18-38-53: selected start is 65 mm above its central stroke", "18-32-31: selected start is 54 mm above its central stroke", "18-40-38: outer-band outlier; median TCP-to-CAD distance 25 mm, p90 50 mm; cause unconfirmed"]
+  },
   "recordings": [
     {"id":"17-37-06", "motion":"stationary_test", "setup":"different_robot_test", "train":false, "reason":"Confirmed test on a different robot; almost stationary joint recording."},
     {"id":"17-41-44", "motion":"early_exploration", "setup":"different_robot_test", "train":false, "reason":"Confirmed test on a different robot; exploratory joint motion."},

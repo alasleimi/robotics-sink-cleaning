@@ -2,6 +2,8 @@
 
 24 recordings from Ala and Ecem's `iiwa-test` download are preserved byte-for-byte in `data/lab/2026-11-11/raw`. The recording/replay sources and tool configuration are preserved beside them in `source`; they are reference snapshots, not compiled project entry points.
 
+**Audit update:** [classification and placement checks](lab-audit.md) support the two edge bands and general basin placement. Some Y-extrema training intervals retain approach motion, and `18-40-38` is a displaced outer-band take. Exact sink/contact calibration remains unresolved; Ala is unsure whether the later setup changed. The original models and scene are retained as the documented baseline.
+
 ## Watch a recording
 
 From the repository folder, after the normal `uv run --locked scripts/setup.py` setup:
@@ -28,7 +30,7 @@ This viewer places the arm at the recorded joint angles, interpolated using the 
 
 Ten files are kept out of these five cleaning models: **seven early tests on a different robot** (17:37–17:51, confirmed by Ala), one wrist-rotation test, and two partial/local edge motions. The early robot model/tool are unknown: their Cartesian plots and playback assume the sink robot's geometry only for illustration. Their motions cannot establish sink placement or failed cleaning. All originals remain available. The wrist test reaches A7 ≈178.35°, exceeding this model's nominal 175° limit; inspection preserves its measurements without clipping.
 
-No malformed JSON, nonfinite required joint samples, or non-increasing timestamps were found. Actual median sample spacing is approximately 19–25 ms, not exactly the requested 15/20 ms. The maximum observed gap is 53 ms. All 24 start with an approach or test posture; only the selected cleaning intervals enter training.
+No malformed JSON, nonfinite required joint samples, or non-increasing timestamps were found. Actual median sample spacing is approximately 19–25 ms, not exactly the requested 15/20 ms. The maximum observed gap is 53 ms. All 24 start with an approach or test posture; training uses the selected intervals, whose endpoints remain provisional because some include part of the approach.
 
 [Trajectory overview](../data/lab/2026-11-11/analysis/trajectories.png) · [Per-file decisions and intervals](../data/lab/2026-11-11/analysis/recordings.json) · [Editable classification](../data/lab/2026-11-11/classification.json)
 
