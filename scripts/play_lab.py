@@ -27,9 +27,10 @@ def load_playback(model, source, cleaning_only=False):
     if source.suffix == ".json":
         _, t, q = read_trajectory(source)
         poses = reconstruct(model, q)
+        report = json.loads((LAB/"analysis/recordings.json").read_text())
+        entry = next((r for r in report if Path(r["source"]).name == source.name), None)
+        other_robot = entry is not None and entry.get("setup") == "different_robot_test"
         if cleaning_only:
-            report = json.loads((LAB/"analysis/recordings.json").read_text())
-            entry = next((r for r in report if Path(r["source"]).name == source.name), None)
             if entry is None or "used_interval_s" not in entry:
                 raise ValueError("No accepted cleaning interval for this recording; omit --cleaning-only to inspect all samples")
             a, b = entry["used_interval_s"]
@@ -38,6 +39,7 @@ def load_playback(model, source, cleaning_only=False):
         kind = "recorded joints and timing"
     else:
         rows, meta = load(source)
+        other_robot = meta.get("setup") == "different_robot_test"
         t, poses = rows[:, 0], rows[:, 1:8]
         if meta.get("joint_positions_valid", True) and np.isfinite(rows[:, 8:15]).all():
             q = rows[:, 8:15]
@@ -54,6 +56,8 @@ def load_playback(model, source, cleaning_only=False):
             if np.max(np.abs(np.diff(q, axis=0))) > .4:
                 raise ValueError("Learned path has an IK joint jump; inspect the path before playback")
             kind = "learned pose path with simulated IK; timing is illustrative"
+    if other_robot:
+        kind += "; DIFFERENT ROBOT TEST: robot/tool geometry assumed, displayed sink does not apply"
     excess = max(0, np.max(q-model.limits[:, 1]), np.max(model.limits[:, 0]-q))
     if excess:
         print(f"Recorded samples exceed nominal model limits by {np.rad2deg(excess):.2f} deg; displayed unchanged, not executable motion.")

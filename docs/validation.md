@@ -2,7 +2,7 @@
 
 ## Real lab recordings, NAURU and per-motion learning — 18 November 2026
 
-Imported 24 Task 9/11 JSON files without changing the Downloads originals. Fourteen cleaning takes yield five motion classes and ten final KMP/TP-KMP paths. Ala confirmed that half-arcs are edge cleaning. Early test/setup labels and inner/outer bands remain geometric interpretations. The supplied STEP, visual mesh, concave collision surface, raw data, source snapshot, classifications and saved models are in the repository; see [lab recordings](lab-recordings.md).
+Imported 24 Task 9/11 JSON files without changing the Downloads originals. Fourteen cleaning takes yield five motion classes and ten final KMP/TP-KMP paths. Ala confirmed that half-arcs are edge cleaning and the seven early takes were tests on a different robot. Those seven were already excluded; sink placement and learned models are unchanged. Inner/outer bands remain geometric interpretations. The supplied STEP, visual mesh, concave collision surface, raw data, source snapshot, classifications and saved models are in the repository; see [lab recordings](lab-recordings.md).
 
 Windows validation:
 
@@ -13,6 +13,8 @@ Windows validation:
 - Initial global-orientation KMP fits showed SO(3) logarithm-cut spikes. A fixed training-mean reference orientation removes those spikes without modifying PGLfD. TP task axes are fixed relative to the sink, rather than rotating the cleaning geometry with the demonstrator's endpoint tool roll.
 
 The new viewer uses kinematic playback, not dynamic controller/contact validation. The sink pose is inferred and the collision approximation omits undercuts. GUI controls and the new workflow on Mac have not been manually tested. No hardware connection was made by the assistant. User-reported Task 9/10 lab use does not validate the separate native-hand-guiding recorder. Fresh cross-platform CI status is recorded separately when available.
+
+Follow-up: early-recording reports, imported metadata and plots now mark the confirmed different robot; playback states that its assumed geometry and displayed sink do not describe that setup. All 32 Python/PGLfD checks passed locally, and both raw/imported early playback were checked headlessly. CI run `44241285421` exposed tiny platform-dependent model-reload differences (up to about 2.4e-7 in pose components). The reload check now compares physical position (<1 micrometre) and rotation (<1e-5 radians), including equivalent quaternion signs. Learned parameters, selected training takes and sink placement are unchanged; the updated cross-platform run is pending.
 
 ## Optional demonstration telemetry and recorder cleanup — 10 November 2026
 

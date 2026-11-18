@@ -85,6 +85,8 @@ def prepare(output):
                       "max_joint_limit_excess_deg": float(np.rad2deg(max(0, np.max(q-model.limits[:, 1]), np.max(model.limits[:, 0]-q)))),
                       "missing_optional_channels": [k for k in ("tcp", "torque", "extTorque", "extForce")
                                                     if not all(k in s for s in document["samples"])]}
+            if entry.get("setup") == "different_robot_test":
+                report["kinematics_note"] = "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
             if actual is not None:
                 delta = np.linalg.norm(poses[:, :3]-actual[:, :3], axis=1)*1000
                 angle = (Rotation.from_quat(poses[:, 3:])*Rotation.from_quat(actual[:, 3:]).inv()).magnitude()
@@ -124,6 +126,10 @@ def prepare(output):
                     "read_seconds_note": "0 placeholder; not measured by the lab recorder",
                     "raw_source": report["source"], "sha256": report["sha256"],
                     "motion": entry["motion"], "cleaning_interval_s": report.get("used_interval_s")}
+            if entry.get("setup") == "different_robot_test":
+                meta.update(setup=entry["setup"], pose_source=report["kinematics_note"],
+                            tool_template="Unknown; 202 mm TCP assumed for visualization",
+                            sink_pose=None, sink_pose_status="Different robot test; sink setup does not apply")
             (folder/"metadata.json").write_text(json.dumps(meta, indent=2))
         results = LAB/"analysis"; results.mkdir(exist_ok=True)
         (results/"recordings.json").write_text(json.dumps(reports, indent=2))
@@ -140,14 +146,16 @@ def plot_overview(records, scene, rim, output):
     fig, axes = plt.subplots(6, 4, figsize=(16, 20))
     rotation = Rotation.from_quat(scene["sink_pose"][3:]).as_matrix()[:2, :2]
     for ax, (entry, t, q, poses, _) in zip(axes.flat, records):
-        for kind in ("inner", "outer"):
+        other_robot = entry.get("setup") == "different_robot_test"
+        for kind in (() if other_robot else ("inner", "outer")):
             outline = np.array(rim[kind])[:, :2] @ rotation.T + scene["sink_pose"][:2]
             ax.plot(*outline.T, color=".8", lw=.5)
         ax.plot(*poses[:, :2].T, color=".65", lw=.7)
         ids = trim_interval(t, poses, entry) if entry["train"] else np.arange(len(t))
         ids = ids[::max(1, len(ids)//150)]
         ax.scatter(*poses[ids, :2].T, c=t[ids], cmap="viridis", s=3)
-        ax.set_title(entry["id"]+"\n"+entry["motion"].replace("_", " "), fontsize=9)
+        label = "other robot test (assumed FK)" if other_robot else entry["motion"].replace("_", " ")
+        ax.set_title(entry["id"]+"\n"+label, fontsize=9)
         ax.set(xlim=(.25, 1), ylim=(-.44, .34), xlabel="Robot X (m)", ylabel="Robot Y (m)")
         ax.set_aspect("equal"); ax.grid(alpha=.15)
     fig.suptitle("24 lab recordings | purple → yellow = time; grey = approach / CAD rim\n"

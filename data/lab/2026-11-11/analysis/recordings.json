@@ -2,8 +2,9 @@
   {
     "id": "17-37-06",
     "motion": "stationary_test",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Only millimetres of TCP displacement; no useful cleaning stroke.",
+    "reason": "Confirmed test on a different robot; almost stationary joint recording.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-37-06.json",
     "sha256": "6e0aa26d218f4a01531b544426437235301f23216c9933ce573b6f0b0a2d1744",
     "samples": 417,
@@ -24,13 +25,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-41-44",
     "motion": "early_exploration",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Irregular motion behind the inferred basin; setup/intent unconfirmed.",
+    "reason": "Confirmed test on a different robot; exploratory joint motion.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-41-44.json",
     "sha256": "069af6e79496ce7236c97569d99988023cde0bb95efbc0cafa8bce7ccb158d14",
     "samples": 896,
@@ -51,13 +54,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-42-07",
     "motion": "short_joint_test",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "About 37 mm sideways at the starting height; no sink contact path.",
+    "reason": "Confirmed test on a different robot; short joint motion.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-42-07.json",
     "sha256": "2885a0c4833081d9e4a7a2b7f5c163f53945166716a2bc9e26f632c8c0283284",
     "samples": 353,
@@ -78,13 +83,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-47-51",
     "motion": "lowering_test",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Lowering in steps, ending above the inferred rim; no cleaning stroke.",
+    "reason": "Confirmed test on a different robot; appears to lower in steps under assumed iiwa 7 kinematics.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-47-51.json",
     "sha256": "bb64f0f9b75e7be370d2738447532899546b07a8ab9d8e452138151921075284",
     "samples": 511,
@@ -105,13 +112,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-49-03",
     "motion": "early_large_loops",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Large loops below the later inferred sink surface; different setup or unsuccessful attempt possible.",
+    "reason": "Confirmed test on a different robot; appears as large loops under assumed iiwa 7 kinematics.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-49-03.json",
     "sha256": "6f0e158e4931382a5c3e3f4d950e7bf49a8a5005e898793babe257e22f22f9a1",
     "samples": 1170,
@@ -132,13 +141,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-51-21",
     "motion": "early_back_and_forth",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Two long strokes below the later sink position; setup/intent unconfirmed.",
+    "reason": "Confirmed test on a different robot; appears as back-and-forth strokes under assumed iiwa 7 kinematics.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-51-21.json",
     "sha256": "47f3f8a2652cd842d3e8a2bbce4d16bd5777a692fef7b5ba69d67c6bd0d26f97",
     "samples": 928,
@@ -159,13 +170,15 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "17-51-53",
     "motion": "early_large_loop",
+    "setup": "different_robot_test",
     "train": false,
-    "reason": "Large descending loop below the later sink position; setup/intent unconfirmed.",
+    "reason": "Confirmed test on a different robot; appears as a descending loop under assumed iiwa 7 kinematics.",
     "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-51-53.json",
     "sha256": "825ef3968eeef6cdf2103d0761bfcbb48b1a22efe6ba96e4e2c86f860a2e390b",
     "samples": 945,
@@ -186,7 +199,8 @@
       "torque",
       "extTorque",
       "extForce"
-    ]
+    ],
+    "kinematics_note": "Actual robot/tool unknown. TCP geometry and limit comparisons assume the sink iiwa 7 R800 with 202 mm TCP; illustrative only."
   },
   {
     "id": "18-09-35",

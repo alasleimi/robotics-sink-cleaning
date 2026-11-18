@@ -26,7 +26,7 @@ This viewer places the arm at the recorded joint angles, interpolated using the 
 
 **The half-arcs are intentional edge cleaning**, confirmed by Ala. Inner/outer band labels and bowl-loop labels are geometric interpretations. The two directions are learned separately, without reversing the recorded orientation or motion.
 
-Ten files are kept out of these five cleaning models: one essentially stationary take; three short/irregular early tests; three early large motions inconsistent with the later sink placement; one wrist-rotation test; and two partial/local edge motions. Early setup/intent is unconfirmed, so those files are not declared corrupt or deleted. The wrist test reaches A7 ≈178.35°, exceeding this model's nominal 175° limit; inspection preserves its measurements without clipping.
+Ten files are kept out of these five cleaning models: **seven early tests on a different robot** (17:37–17:51, confirmed by Ala), one wrist-rotation test, and two partial/local edge motions. The early robot model/tool are unknown: their Cartesian plots and playback assume the sink robot's geometry only for illustration. Their motions cannot establish sink placement or failed cleaning. All originals remain available. The wrist test reaches A7 ≈178.35°, exceeding this model's nominal 175° limit; inspection preserves its measurements without clipping.
 
 No malformed JSON, nonfinite required joint samples, or non-increasing timestamps were found. Actual median sample spacing is approximately 19–25 ms, not exactly the requested 15/20 ms. The maximum observed gap is 53 ms. All 24 start with an approach or test posture; only the selected cleaning intervals enter training.
 

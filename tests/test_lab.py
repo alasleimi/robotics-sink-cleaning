@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import pytest
 import mujoco
+from scipy.spatial.transform import Rotation
 from pglfd.geom.se3 import multiply_poses
 from sinkcleaning.lab import read_trajectory, reconstruct, measured_poses, path_phase
 from sinkcleaning.learned import predict_saved
@@ -78,7 +79,11 @@ def test_final_learned_paths_reachable_continuous_and_reloadable(robot):
             assert metadata["joint_positions_valid"] is False
             poses, report = predict_saved(folder, kind=kind)
             base = multiply_poses(np.array(report["sink_pose"]), poses)
-            np.testing.assert_allclose(base, rows[:, 1:8], atol=1e-7)
+            # BLAS/CPU differences slightly perturb reloaded kernel predictions.
+            # Compare physical pose error, including equivalent quaternion signs.
+            assert np.max(np.linalg.norm(base[:, :3]-rows[:, 1:4], axis=1)) < 1e-6
+            angle = (Rotation.from_quat(base[:, 3:])*Rotation.from_quat(rows[:, 4:8]).inv()).magnitude()
+            assert np.max(angle) < 1e-5
             # Regress spurious spikes from the SO3 log cut in the initial fit.
             assert np.max(np.linalg.norm(np.diff(base[:, :3], axis=0), axis=1)) < .045
             t, q, _, _ = load_playback(robot, folder/kind)
