@@ -1,0 +1,38 @@
+{
+  "schema": 2,
+  "units": {
+    "position": "m",
+    "orientation": "quaternion_xyzw",
+    "time": "s",
+    "joints": "rad"
+  },
+  "pose_frame": "robot_base",
+  "tcp": [
+    0,
+    0,
+    0.202,
+    0,
+    0,
+    0,
+    1
+  ],
+  "tool_template": "EXERCISE_TOO (lab source)",
+  "sink_pose": [
+    0.7121733947854116,
+    -0.04242785915644251,
+    -0.008582802093949765,
+    0.0,
+    0.0,
+    0.7050781960812954,
+    0.7091295632045997
+  ],
+  "complete": true,
+  "source": "learned",
+  "learned_model": "tpkmp",
+  "joint_positions_valid": false,
+  "wrench_valid": false,
+  "samples": 60,
+  "duration_s": 14.716999999999999,
+  "sink_pose_status": "Trajectory-derived estimate, NOT measured calibration",
+  "read_seconds_valid": false
+}

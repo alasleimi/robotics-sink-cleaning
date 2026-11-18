@@ -1,0 +1,77 @@
+{
+  "bowl_loop": {
+    "recordings": 2,
+    "mean_fold_metrics": {
+      "kmp": {
+        "position_rmse_mm": 47.24182453029246,
+        "position_max_mm": 67.15765882716622,
+        "orientation_rmse_deg": 13.979517763597137
+      },
+      "tpkmp": {
+        "position_rmse_mm": 40.976431414281265,
+        "position_max_mm": 60.44653052534484,
+        "orientation_rmse_deg": 13.979517763597137
+      }
+    }
+  },
+  "rim_inner_y_minus": {
+    "recordings": 4,
+    "mean_fold_metrics": {
+      "kmp": {
+        "position_rmse_mm": 33.03658626563525,
+        "position_max_mm": 58.26254784626058,
+        "orientation_rmse_deg": 8.735550150847708
+      },
+      "tpkmp": {
+        "position_rmse_mm": 55.96248048765606,
+        "position_max_mm": 104.84684625553352,
+        "orientation_rmse_deg": 8.3188034753669
+      }
+    }
+  },
+  "rim_inner_y_plus": {
+    "recordings": 3,
+    "mean_fold_metrics": {
+      "kmp": {
+        "position_rmse_mm": 60.31233775546905,
+        "position_max_mm": 83.94625587540474,
+        "orientation_rmse_deg": 11.622224448378377
+      },
+      "tpkmp": {
+        "position_rmse_mm": 25.88984020671391,
+        "position_max_mm": 47.680396549943644,
+        "orientation_rmse_deg": 18.83735122426962
+      }
+    }
+  },
+  "rim_outer_y_minus": {
+    "recordings": 3,
+    "mean_fold_metrics": {
+      "kmp": {
+        "position_rmse_mm": 39.22399059419761,
+        "position_max_mm": 60.640028103906936,
+        "orientation_rmse_deg": 10.29781395300934
+      },
+      "tpkmp": {
+        "position_rmse_mm": 63.565518737254,
+        "position_max_mm": 93.98834238489088,
+        "orientation_rmse_deg": 10.790516176823354
+      }
+    }
+  },
+  "rim_outer_y_plus": {
+    "recordings": 2,
+    "mean_fold_metrics": {
+      "kmp": {
+        "position_rmse_mm": 60.59667233529239,
+        "position_max_mm": 77.99857365634978,
+        "orientation_rmse_deg": 24.42288624452707
+      },
+      "tpkmp": {
+        "position_rmse_mm": 51.65936352172099,
+        "position_max_mm": 95.23818534792888,
+        "orientation_rmse_deg": 24.42288624452707
+      }
+    }
+  }
+}

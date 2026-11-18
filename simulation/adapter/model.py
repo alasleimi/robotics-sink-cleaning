@@ -94,7 +94,7 @@ class Model:
                 self.viewer.cam.distance = 2.2
                 self.viewer.cam.azimuth = 135
                 self.viewer.cam.elevation = -20
-                if scene == "sink":
+                if scene in ("sink", "nauru"):
                     self.viewer.cam.lookat[:] = [.4,0,.2]
                     self.viewer.cam.distance = 1.8
                     self.viewer.cam.azimuth = -45

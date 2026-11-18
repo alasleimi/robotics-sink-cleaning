@@ -13,3 +13,8 @@ gradlew.bat text eol=crlf
 *.jar binary
 *.ttm binary
 *.ttt binary
+# Preserve supplied lab data/source bytes and CAD hashes on every platform.
+data/lab/2026-11-11/raw/*.json -text
+data/lab/2026-11-11/source/* -text
+simulation/assets/nauru/*.step binary
+*.hfield binary

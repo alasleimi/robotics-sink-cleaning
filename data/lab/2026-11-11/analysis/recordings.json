@@ -1,0 +1,800 @@
+[
+  {
+    "id": "17-37-06",
+    "motion": "stationary_test",
+    "train": false,
+    "reason": "Only millimetres of TCP displacement; no useful cleaning stroke.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-37-06.json",
+    "sha256": "6e0aa26d218f4a01531b544426437235301f23216c9933ce573b6f0b0a2d1744",
+    "samples": 417,
+    "duration_s": 10.38,
+    "dt_ms_min_median_max": [
+      20.99999999999902,
+      25.000000000000355,
+      33.99999999999892
+    ],
+    "tcp_extent_mm": [
+      0.2858166398087558,
+      3.010301327283353,
+      5.0264182110886235
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-41-44",
+    "motion": "early_exploration",
+    "train": false,
+    "reason": "Irregular motion behind the inferred basin; setup/intent unconfirmed.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-41-44.json",
+    "sha256": "069af6e79496ce7236c97569d99988023cde0bb95efbc0cafa8bce7ccb158d14",
+    "samples": 896,
+    "duration_s": 17.159999999999997,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.000000000000128,
+      36.00000000000003
+    ],
+    "tcp_extent_mm": [
+      109.3977480132472,
+      333.8009790227651,
+      369.42867592124054
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-42-07",
+    "motion": "short_joint_test",
+    "train": false,
+    "reason": "About 37 mm sideways at the starting height; no sink contact path.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-42-07.json",
+    "sha256": "2885a0c4833081d9e4a7a2b7f5c163f53945166716a2bc9e26f632c8c0283284",
+    "samples": 353,
+    "duration_s": 6.832999999999999,
+    "dt_ms_min_median_max": [
+      15.99999999999996,
+      19.999999999999574,
+      32.00000000000003
+    ],
+    "tcp_extent_mm": [
+      0.8302159772060058,
+      37.05233598589352,
+      0.020957566718271536
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-47-51",
+    "motion": "lowering_test",
+    "train": false,
+    "reason": "Lowering in steps, ending above the inferred rim; no cleaning stroke.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-47-51.json",
+    "sha256": "bb64f0f9b75e7be370d2738447532899546b07a8ab9d8e452138151921075284",
+    "samples": 511,
+    "duration_s": 9.771,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.000000000000128,
+      27.000000000000135
+    ],
+    "tcp_extent_mm": [
+      21.7816381924385,
+      10.900119369670765,
+      164.45504301737512
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-49-03",
+    "motion": "early_large_loops",
+    "train": false,
+    "reason": "Large loops below the later inferred sink surface; different setup or unsuccessful attempt possible.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-49-03.json",
+    "sha256": "6f0e158e4931382a5c3e3f4d950e7bf49a8a5005e898793babe257e22f22f9a1",
+    "samples": 1170,
+    "duration_s": 22.3,
+    "dt_ms_min_median_max": [
+      14.99999999999968,
+      19.000000000000128,
+      32.00000000000003
+    ],
+    "tcp_extent_mm": [
+      420.26108959953626,
+      476.1489528415226,
+      466.57176305161255
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-51-21",
+    "motion": "early_back_and_forth",
+    "train": false,
+    "reason": "Two long strokes below the later sink position; setup/intent unconfirmed.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-51-21.json",
+    "sha256": "47f3f8a2652cd842d3e8a2bbce4d16bd5777a692fef7b5ba69d67c6bd0d26f97",
+    "samples": 928,
+    "duration_s": 17.610999999999997,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.000000000000128,
+      32.99999999999997
+    ],
+    "tcp_extent_mm": [
+      420.3138143213822,
+      63.672189534746586,
+      563.6888229079769
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "17-51-53",
+    "motion": "early_large_loop",
+    "train": false,
+    "reason": "Large descending loop below the later sink position; setup/intent unconfirmed.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_17-51-53.json",
+    "sha256": "825ef3968eeef6cdf2103d0761bfcbb48b1a22efe6ba96e4e2c86f860a2e390b",
+    "samples": 945,
+    "duration_s": 17.83,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.000000000000128,
+      26.00000000000069
+    ],
+    "tcp_extent_mm": [
+      548.9009008877082,
+      400.377642016009,
+      590.5132193368713
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "18-09-35",
+    "motion": "partial_rim_sweep",
+    "train": false,
+    "reason": "Only one portion of the rim after approach; kept for inspection, not averaged with full sweeps.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-09-35.json",
+    "sha256": "d7092b279664b88e255a97162595ebe31193ad320f154fefb7cb8b2790664d44",
+    "samples": 1058,
+    "duration_s": 20.377000000000002,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.999999999999574,
+      24.99999999999991
+    ],
+    "tcp_extent_mm": [
+      274.3278241296176,
+      342.84922075058216,
+      289.27383826233523
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "18-12-30",
+    "motion": "rim_inner_y_plus",
+    "train": true,
+    "reason": "Full reverse inner-band edge sweep, with pauses. Direction refers to robot-base Y.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-12-30.json",
+    "sha256": "16d9df7e41d4d875ad6537f2fb7ac7c02cc48caa036a96f278ad1f45a7626b3e",
+    "samples": 2554,
+    "duration_s": 49.061,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.99999999999602,
+      40.000000000000036
+    ],
+    "tcp_extent_mm": [
+      295.67919040690725,
+      542.4718409189754,
+      305.14223786197067
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      11.006,
+      42.949
+    ],
+    "training_samples": 1668
+  },
+  {
+    "id": "18-13-32",
+    "motion": "rim_inner_y_minus",
+    "train": true,
+    "reason": "Full inner-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-13-32.json",
+    "sha256": "2e1e231fdd54dc30b1d607fba067ddaca2ef64c30f33cc6a8389efb3bba6bf79",
+    "samples": 1827,
+    "duration_s": 35.289,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.999999999999574,
+      34.00000000000003
+    ],
+    "tcp_extent_mm": [
+      266.5183381595151,
+      553.4436285236355,
+      303.0508208593244
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      7.178,
+      29.148
+    ],
+    "training_samples": 1142
+  },
+  {
+    "id": "18-17-58",
+    "motion": "wrist_rotation_test",
+    "train": false,
+    "reason": "A7 rotates to about 178.35 degrees, beyond simulator nominal 175; not a cleaning path. Raw observations retained without clipping.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-17-58.json",
+    "sha256": "4ead71465d250d9874d8891a52261b8fab147e70d073d5406df54fe1026fb77c",
+    "samples": 2150,
+    "duration_s": 40.983,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.000000000001904,
+      44.00000000000004
+    ],
+    "tcp_extent_mm": [
+      13.037747741696414,
+      165.50939559424356,
+      141.88141599721428
+    ],
+    "max_joint_limit_excess_deg": 3.3495112703347774,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "18-31-47",
+    "motion": "rim_outer_y_minus",
+    "train": true,
+    "reason": "Full outer-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-31-47.json",
+    "sha256": "85d6bcb649dab142905f1b96c57bef98b422082bb2d9ddf9391396c1b6291066",
+    "samples": 1787,
+    "duration_s": 34.394,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.999999999999574,
+      31.00000000000236
+    ],
+    "tcp_extent_mm": [
+      339.0131519092612,
+      567.1589978834534,
+      298.6319660511622
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      7.011,
+      31.605
+    ],
+    "training_samples": 1281
+  },
+  {
+    "id": "18-32-31",
+    "motion": "rim_inner_y_plus",
+    "train": true,
+    "reason": "Full reverse inner-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-32-31.json",
+    "sha256": "baa6e518b9b6afe07119d602804707ac8de680b09e06f6bcdf3f31feadf09f86",
+    "samples": 1678,
+    "duration_s": 32.127,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.000000000001904,
+      29.99999999999997
+    ],
+    "tcp_extent_mm": [
+      306.02596532006135,
+      596.7589458823819,
+      305.93258234803716
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      6.134,
+      28.257
+    ],
+    "training_samples": 1159
+  },
+  {
+    "id": "18-33-07",
+    "motion": "rim_inner_y_minus",
+    "train": true,
+    "reason": "Full inner-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-33-07.json",
+    "sha256": "809e7573c77c67ac42690d17ece6eec8428cbfa8a167e1234937437cd22185f6",
+    "samples": 1328,
+    "duration_s": 25.601999999999997,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.999999999999574,
+      29.000000000000025
+    ],
+    "tcp_extent_mm": [
+      281.3542967523555,
+      617.4679604102696,
+      310.7527839321741
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      5.063,
+      22.58
+    ],
+    "training_samples": 914
+  },
+  {
+    "id": "18-33-41",
+    "motion": "rim_outer_y_minus",
+    "train": true,
+    "reason": "Full outer-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-33-41.json",
+    "sha256": "d0c6f768fa18829481a39dd097a7509cecbdcebae95433cef5cbccc1375bfabd",
+    "samples": 1181,
+    "duration_s": 22.72,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.999999999999574,
+      28.999999999999915
+    ],
+    "tcp_extent_mm": [
+      354.3991895303226,
+      595.9322409404897,
+      299.36346364384366
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      4.823,
+      18.777
+    ],
+    "training_samples": 728
+  },
+  {
+    "id": "18-34-31",
+    "motion": "bowl_loop",
+    "train": true,
+    "interval_s": [
+      7.2,
+      16.2
+    ],
+    "reason": "Counterclockwise loop with inward finish inside bowl; omit approach and final lift.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-34-31.json",
+    "sha256": "3ba30cb32d15134e7cabac66da30f416e0aac8c84656b5826269b128d0e4dfb9",
+    "samples": 1117,
+    "duration_s": 21.505,
+    "dt_ms_min_median_max": [
+      14.999999999997016,
+      19.999999999999574,
+      39.000000000000036
+    ],
+    "tcp_extent_mm": [
+      280.5400461188532,
+      284.73164682002107,
+      400.74660287590194
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      7.212,
+      16.197
+    ],
+    "training_samples": 468
+  },
+  {
+    "id": "18-37-33",
+    "motion": "partial_back_edge",
+    "train": false,
+    "reason": "Short local motion at rear/side of inferred sink; incomplete or separate intent, needs review.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-37-33.json",
+    "sha256": "5915c9660a57326202f00b80480a98ff3e2106531bfccf21db34337409ca457a",
+    "samples": 1110,
+    "duration_s": 21.341,
+    "dt_ms_min_median_max": [
+      15.999999999998238,
+      19.999999999999574,
+      29.99999999999997
+    ],
+    "tcp_extent_mm": [
+      116.09828819311151,
+      282.498524387702,
+      266.48889292597346
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ]
+  },
+  {
+    "id": "18-38-16",
+    "motion": "rim_outer_y_plus",
+    "train": true,
+    "reason": "Full reverse outer-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-38-16.json",
+    "sha256": "47ca16ac097b87e90035023b9f9e5079250809171e8e24a8939701d9c34dd700",
+    "samples": 1825,
+    "duration_s": 35.094,
+    "dt_ms_min_median_max": [
+      15.000000000000568,
+      19.999999999999574,
+      27.000000000001023
+    ],
+    "tcp_extent_mm": [
+      350.3539448929517,
+      617.6048172696187,
+      307.3157895387172
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [
+      "tcp",
+      "torque",
+      "extTorque",
+      "extForce"
+    ],
+    "used_interval_s": [
+      7.649,
+      33.97
+    ],
+    "training_samples": 1371
+  },
+  {
+    "id": "18-38-53",
+    "motion": "rim_inner_y_minus",
+    "train": true,
+    "reason": "Full inner-band edge sweep; final return excluded by Y-extrema trim.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-38-53.json",
+    "sha256": "7bd4e0f6ba01a8b9256d2b2ef4be51abd6bcb771b04c62ddd7e0c4e060e3a082",
+    "samples": 865,
+    "duration_s": 20.571,
+    "dt_ms_min_median_max": [
+      18.99999999999835,
+      24.00000000000002,
+      49.00000000000004
+    ],
+    "tcp_extent_mm": [
+      290.04267156183505,
+      553.4792965145933,
+      296.01009307048133
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.07205485016359439,
+      0.28510373173079656,
+      1.7374743830078938
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.027249919551666318,
+    "raw_external_force_N_median_p95_max": [
+      2.039506312812,
+      3.629458613485753,
+      5.373194766616971
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.6144794544978701,
+      1.2326852879336136,
+      1.458443691062497
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      2.391,
+      14.308
+    ],
+    "training_samples": 498
+  },
+  {
+    "id": "18-39-35",
+    "motion": "rim_inner_y_plus",
+    "train": true,
+    "reason": "Full reverse inner-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-39-35.json",
+    "sha256": "dbf0e67ff310961df45ec15fb8dc80aa36606080c6be4c23a1aef4259e4f81b2",
+    "samples": 1298,
+    "duration_s": 30.532,
+    "dt_ms_min_median_max": [
+      18.000000000000682,
+      23.999999999999133,
+      35.00000000000014
+    ],
+    "tcp_extent_mm": [
+      324.4956221846653,
+      618.0164146583804,
+      298.9539209183766
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.051826265587244034,
+      0.2268367800972655,
+      0.44297861453970405
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.019263186016849513,
+    "raw_external_force_N_median_p95_max": [
+      1.8613934062133466,
+      5.029924233268713,
+      8.602284638396942
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.547297907845805,
+      0.8182138811962092,
+      1.0065952513299474
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      5.361,
+      24.928
+    ],
+    "training_samples": 826
+  },
+  {
+    "id": "18-40-01",
+    "motion": "rim_inner_y_minus",
+    "train": true,
+    "reason": "Full inner-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-40-01.json",
+    "sha256": "fbf4813bc7f95391d8587fbd3260044313dcd2e3a26ab706c9215364992f8bd5",
+    "samples": 761,
+    "duration_s": 18.085,
+    "dt_ms_min_median_max": [
+      18.000000000000682,
+      23.999999999999133,
+      40.000000000000036
+    ],
+    "tcp_extent_mm": [
+      292.1366771406946,
+      605.920549967878,
+      292.37858979790485
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.09695238717263183,
+      0.33221193100090024,
+      1.7751315450295415
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.0238365649175108,
+    "raw_external_force_N_median_p95_max": [
+      1.6534016450941376,
+      4.153056464822023,
+      8.33238321250289
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.5432697304286334,
+      0.8991540468684996,
+      0.9935622778668682
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      2.763,
+      11.609
+    ],
+    "training_samples": 371
+  },
+  {
+    "id": "18-40-38",
+    "motion": "rim_outer_y_plus",
+    "train": true,
+    "reason": "Full reverse outer-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-40-38.json",
+    "sha256": "96a9313ff9fecd0a5b123b39ceca11ca9caf9c95f7cfc6b040a7dab975f641d3",
+    "samples": 832,
+    "duration_s": 19.801,
+    "dt_ms_min_median_max": [
+      18.000000000000682,
+      24.00000000000002,
+      36.00000000000001
+    ],
+    "tcp_extent_mm": [
+      368.4926890427228,
+      621.7881744245162,
+      293.28248707470385
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.08906599519908028,
+      0.367824655752957,
+      0.8635722238286649
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.042921856834258296,
+    "raw_external_force_N_median_p95_max": [
+      1.9635032452644294,
+      5.980223527307142,
+      9.367136702322648
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.3631294299412209,
+      0.8671889201608641,
+      0.9944988687776372
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      3.941,
+      16.866
+    ],
+    "training_samples": 543
+  },
+  {
+    "id": "18-41-07",
+    "motion": "rim_outer_y_minus",
+    "train": true,
+    "reason": "Full outer-band edge sweep.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-41-07.json",
+    "sha256": "f2db9ddb6f39dca7a8fc9ca2232fd4e7fc20b7a9f344e15c1d372bddd9d3a9d2",
+    "samples": 846,
+    "duration_s": 20.094,
+    "dt_ms_min_median_max": [
+      19.000000000000004,
+      24.00000000000002,
+      53.00000000000005
+    ],
+    "tcp_extent_mm": [
+      363.8541809909597,
+      572.7859786507692,
+      305.9756154583619
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.08636335678793963,
+      0.3132123978220308,
+      1.2939320759077628
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.03548784404643536,
+    "raw_external_force_N_median_p95_max": [
+      1.1940848355395235,
+      3.8208414848855816,
+      14.62496023926219
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.4208087448274916,
+      0.6118185242225984,
+      0.8155084303672158
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      3.873,
+      15.891
+    ],
+    "training_samples": 505
+  },
+  {
+    "id": "18-41-50",
+    "motion": "bowl_loop",
+    "train": true,
+    "interval_s": [
+      5.3,
+      10.7
+    ],
+    "reason": "Smaller counterclockwise bowl loop with inward finish; omit approach and stationary tail.",
+    "source": "data/lab/2026-11-11/raw/traj_2026-11-11_18-41-50.json",
+    "sha256": "066d1e92fc8f989fee8bf35a11ef3a71ef5f52ecf63b86b2166ae65c138c7a34",
+    "samples": 581,
+    "duration_s": 13.885,
+    "dt_ms_min_median_max": [
+      19.000000000000128,
+      24.00000000000002,
+      35.00000000000014
+    ],
+    "tcp_extent_mm": [
+      236.79056242305518,
+      225.87531080805502,
+      397.24383062803383
+    ],
+    "max_joint_limit_excess_deg": 0.0,
+    "missing_optional_channels": [],
+    "fk_vs_measured_tcp_mm_median_p95_max": [
+      0.08566473250061063,
+      0.37759817407161417,
+      0.7624966314842974
+    ],
+    "fk_vs_measured_orientation_deg_p95": 0.033487788765351474,
+    "raw_external_force_N_median_p95_max": [
+      2.4270675721948907,
+      6.14907236906511,
+      27.354570385951963
+    ],
+    "raw_external_moment_Nm_median_p95_max": [
+      0.4660354063802449,
+      0.8435573483765049,
+      1.2519329055504533
+    ],
+    "wrench_note": "Raw Task 11 sensor readings; include guiding hand loads, not isolated sponge contact. Frame/reference unspecified. Not used for contact labels or force learning.",
+    "used_interval_s": [
+      5.302,
+      10.691
+    ],
+    "training_samples": 225
+  }
+]

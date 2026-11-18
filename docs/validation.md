@@ -1,5 +1,19 @@
 # Validation history
 
+## Real lab recordings, NAURU and per-motion learning — 18 November 2026
+
+Imported 24 Task 9/11 JSON files without changing the Downloads originals. Fourteen cleaning takes yield five motion classes and ten final KMP/TP-KMP paths. Ala confirmed that half-arcs are edge cleaning. Early test/setup labels and inner/outer bands remain geometric interpretations. The supplied STEP, visual mesh, concave collision surface, raw data, source snapshot, classifications and saved models are in the repository; see [lab recordings](lab-recordings.md).
+
+Windows validation:
+
+- **31 Python tests passed**, including raw-source hashes, missing telemetry, timestamp rejection, independently measured Task 11 TCP versus simulator FK, all ten saved-model reloads, all ten learned paths' IK/joint continuity, task-frame translation response and an open CAD collision cavity.
+- The original exercise/contact integration suite passed (`.tools/sim-ogd8bgtz/report.json`), including Exercise 1 → 2, E1, batches, forces and wire contact. Exercise templates and hardware configuration were unchanged.
+- The existing Java `DemoFiles`/`Pose` reader successfully loaded **all 34 imported/learned recordings**, including NaN optional fields and the seven-component TCP transform. Source-file check in `.tools/CheckLabFormat.java`.
+- Offscreen NAURU replay renders were inspected; snapshots are in `data/lab/2026-11-11/analysis`. New model prediction from saved NPZ parameters was generated and loaded in simulated IK without retraining.
+- Initial global-orientation KMP fits showed SO(3) logarithm-cut spikes. A fixed training-mean reference orientation removes those spikes without modifying PGLfD. TP task axes are fixed relative to the sink, rather than rotating the cleaning geometry with the demonstrator's endpoint tool roll.
+
+The new viewer uses kinematic playback, not dynamic controller/contact validation. The sink pose is inferred and the collision approximation omits undercuts. GUI controls and the new workflow on Mac have not been manually tested. No hardware connection was made by the assistant. User-reported Task 9/10 lab use does not validate the separate native-hand-guiding recorder. Fresh cross-platform CI status is recorded separately when available.
+
 ## Optional demonstration telemetry and recorder cleanup — 10 November 2026
 
 Split the recorder into the workflow (`Record`), an explicit SDK channel list (`RecordingTelemetry`), and optional-read handling (`OptionalTelemetry`). Native hand-guiding and the shared real/simulator loop remain. New takes keep the 22 CSV columns and use schema 2 to allow NaN in missing joint/wrench cells; measured tool pose and timing remain required. Extra readings and per-channel timing/errors go to `telemetry.jsonl`. Setup configuration is copied when available. Optional SDK failures disable only that channel; reads over 100 ms are retained once then disabled. A blocked SDK call still relies on the SDK returning; this is not a hard timeout.

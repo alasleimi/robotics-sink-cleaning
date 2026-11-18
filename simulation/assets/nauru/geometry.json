@@ -1,0 +1,32 @@
+{
+  "source": "NAURU_575x425_v4_photo_constrained.step",
+  "sha256": "bb5d0c1f2f251402c7f9c6aa0192e73c0335fa8fc4d3e18529d098a74cff5010",
+  "bounds_m": [
+    [
+      -0.28735914077330155,
+      -0.21250403659710962,
+      0.0
+    ],
+    [
+      0.287465051594434,
+      0.21244498226601385,
+      0.17
+    ]
+  ],
+  "hfield_size": [
+    0.287465051594434,
+    0.21250403659710962,
+    0.17,
+    0.01
+  ],
+  "hfield_grid": [
+    45,
+    59
+  ],
+  "vertices": 5470,
+  "triangles": 8806,
+  "visual": "STEP tessellation, 1 mm linear / 0.15 rad angular tolerance",
+  "collision": "~10 mm upper-envelope height field; cavity retained; undercuts omitted",
+  "cadquery_docs": "https://cadquery.readthedocs.io/en/latest/importexport.html",
+  "mujoco_docs": "https://mujoco.readthedocs.io/en/3.3.7/XMLreference.html#asset-hfield"
+}

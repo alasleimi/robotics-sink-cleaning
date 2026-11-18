@@ -463,7 +463,7 @@ def main():
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--session", type=Path, default=ROOT / ".tools/adapter-session.json")
     parser.add_argument("--fast", action="store_true")
-    parser.add_argument("--scene", choices=["empty", "wire", "sink"], default="empty")
+    parser.add_argument("--scene", choices=["empty", "wire", "sink", "nauru"], default="empty")
     args = parser.parse_args()
     engine = Engine(Model(headless=args.headless, scene=args.scene))
     token = secrets.token_urlsafe(32)

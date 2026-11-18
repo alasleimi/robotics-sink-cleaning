@@ -54,7 +54,7 @@ def save_prediction(folder,poses,meta,model,duration=8.):
     folder.mkdir(parents=True,exist_ok=False)
     rows=np.zeros((len(poses),22)); rows[:,0]=np.linspace(0,duration,len(poses)); rows[:,1:8]=poses
     np.savetxt(folder/"samples.csv",rows,delimiter=",",header=HEADER,comments="")
-    result={key:meta[key] for key in ('schema','units','pose_frame','tcp','tool_template','sink_pose','calibration_file') if key in meta}
+    result={key:meta[key] for key in ('schema','units','pose_frame','tcp','tool_template','sink_pose','sink_pose_status','calibration_file') if key in meta}
     result.update(complete=True,source="learned",learned_model=model,
-                  joint_positions_valid=False,wrench_valid=False,samples=len(rows),duration_s=duration)
+                  joint_positions_valid=False,wrench_valid=False,read_seconds_valid=False,samples=len(rows),duration_s=duration)
     (folder/"metadata.json").write_text(json.dumps(result,indent=2))

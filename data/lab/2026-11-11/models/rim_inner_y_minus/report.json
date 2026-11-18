@@ -1,0 +1,142 @@
+{
+  "motion": "rim_inner_y_minus",
+  "training_recordings": [
+    "18-13-32",
+    "18-33-07",
+    "18-38-53",
+    "18-40-01"
+  ],
+  "training_count": 4,
+  "phase": "Smoothed TCP arc length; pauses/speed are not learned",
+  "output_manifold": "R3*SO3",
+  "kmp_chart": "Fixed training-mean orientation in sink coordinates avoids the SO3 180-degree log cut; not a per-test task frame",
+  "task_frames_in_sink": {
+    "start": [
+      0.2943468615987146,
+      -0.09883028994070545,
+      0.2084031388439498,
+      -0.7227681904190042,
+      -0.6748869564417824,
+      0.11382908932288248,
+      -0.09579497568823539
+    ],
+    "end": [
+      -0.28840676226336603,
+      -0.0536905870018316,
+      0.19286340109394975,
+      -0.7227681904190042,
+      -0.6748869564417824,
+      0.11382908932288248,
+      -0.09579497568823539
+    ]
+  },
+  "sink_pose": [
+    0.7121733947854116,
+    -0.04242785915644251,
+    -0.008582802093949765,
+    0.0,
+    0.0,
+    0.7050781960812954,
+    0.7091295632045997
+  ],
+  "duration_s": 14.716999999999999,
+  "task_frame_definition": "Origins at cleaning start/end positions; both axes fixed relative to sink by training reference orientation. Tool orientation is learned, not supplied from held-out endpoints.",
+  "evaluation": "Leave-one-recording-out; KMP gets sink frame, TP-KMP also gets held-out start/end positions. Different conditioning, not a fair algorithm ranking.",
+  "limitations": "Same estimated sink pose/session; no evidence of transfer to a different sink placement. Two-example classes have only one training take per fold; covariance is regularized, not well estimated.",
+  "folds": [
+    {
+      "held_out": "18-13-32",
+      "training": [
+        "18-33-07",
+        "18-38-53",
+        "18-40-01"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 47.20586060879806,
+          "position_max_mm": 96.43762076612518,
+          "orientation_rmse_deg": 13.051398956788223
+        },
+        "tpkmp": {
+          "position_rmse_mm": 129.66717016584423,
+          "position_max_mm": 225.60908639368932,
+          "orientation_rmse_deg": 19.213941240441077
+        }
+      }
+    },
+    {
+      "held_out": "18-33-07",
+      "training": [
+        "18-13-32",
+        "18-38-53",
+        "18-40-01"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 21.69243588608338,
+          "position_max_mm": 46.69118444676226,
+          "orientation_rmse_deg": 8.598050460836074
+        },
+        "tpkmp": {
+          "position_rmse_mm": 22.576250875554454,
+          "position_max_mm": 42.903824895740954,
+          "orientation_rmse_deg": 3.9643890056229156
+        }
+      }
+    },
+    {
+      "held_out": "18-38-53",
+      "training": [
+        "18-13-32",
+        "18-33-07",
+        "18-40-01"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 36.85967577557309,
+          "position_max_mm": 49.174195571399956,
+          "orientation_rmse_deg": 8.862055063227158
+        },
+        "tpkmp": {
+          "position_rmse_mm": 51.66346359276673,
+          "position_max_mm": 113.57759467326244,
+          "orientation_rmse_deg": 6.782670694906169
+        }
+      }
+    },
+    {
+      "held_out": "18-40-01",
+      "training": [
+        "18-13-32",
+        "18-33-07",
+        "18-38-53"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 26.38837279208647,
+          "position_max_mm": 40.74719060075493,
+          "orientation_rmse_deg": 4.430696122539377
+        },
+        "tpkmp": {
+          "position_rmse_mm": 19.943037316458835,
+          "position_max_mm": 37.296879059441345,
+          "orientation_rmse_deg": 3.3142129604974424
+        }
+      }
+    }
+  ],
+  "mean_fold_metrics": {
+    "kmp": {
+      "position_rmse_mm": 33.03658626563525,
+      "position_max_mm": 58.26254784626058,
+      "orientation_rmse_deg": 8.735550150847708
+    },
+    "tpkmp": {
+      "position_rmse_mm": 55.96248048765606,
+      "position_max_mm": 104.84684625553352,
+      "orientation_rmse_deg": 8.3188034753669
+    }
+  },
+  "task_frame_translation_check_max_error_m": 1.2866223115240895e-16,
+  "final_models": "Refit using ALL listed recordings; final paths are not held-out predictions"
+}

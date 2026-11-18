@@ -1,0 +1,34 @@
+{
+  "sink_pose": [
+    0.7121733947854116,
+    -0.04242785915644251,
+    -0.008582802093949765,
+    0.0,
+    0.0,
+    0.7050781960812954,
+    0.7091295632045997
+  ],
+  "pose_convention": "metres, XYZW; original STEP bottom-origin in robot base",
+  "product": "User-supplied NAURU 575x425 v4 photo-constrained STEP",
+  "status": "Trajectory-derived estimate, NOT measured calibration",
+  "rim_z_robot_base_m": 0.16141719790605025,
+  "yaw_deg": 89.6717234778362,
+  "fit_residual_mm_median_p90_max": [
+    11.761336006862901,
+    31.294405785889005,
+    55.24191803782802
+  ],
+  "leave_one_recording_out_xy_range_mm": [
+    4.63853024655736,
+    9.014245590789207
+  ],
+  "leave_one_recording_out_yaw_range_deg": 2.7523824560682453,
+  "method": "Robust XY fit of two observed arc bands to CAD inner/outer front rim; median central-arc TCP height",
+  "assumptions": [
+    "Sink upright and stationary for later recordings",
+    "Two arc bands correspond approximately to inner/outer rim",
+    "Recorded course TCP approximates contact point; sponge size/compression and true TCP not calibrated"
+  ],
+  "uncertainty": "Centimetre-scale systematic offsets remain; fit scatter/LOO spread are not calibration confidence intervals.",
+  "floor": "Illustrative 850 mm rim height only; absolute lab floor/robot pedestal height unknown"
+}

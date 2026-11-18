@@ -28,7 +28,8 @@ def fit(trajectories,phase,path):
     reference=[Gaussian.mle_from_data(manifold,np.array([demo[i] for demo in trajectories]),reg=1e-6)
                for i in range(len(phase))]
     means=np.array([g.mu for g in reference]); cov=np.array([g.sigma for g in reference])
-    np.savez(path,phase=phase,means=means,covariances=cov,length_scale=.15)
+    if path is not None:
+        np.savez(path,phase=phase,means=means,covariances=cov,length_scale=.15,lambda1=1.,lambda2=1.)
     man_in=ProductManifold.from_string("R1")
     return KMP(man_in,manifold,phase,means,MaternKernel(man_in,.15),cov,lambda1=1,lambda2=1)
 

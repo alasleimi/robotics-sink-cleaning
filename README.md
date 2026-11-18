@@ -39,6 +39,14 @@ E1-constrained IK/PTP/LIN and taught elbow replay are supported. The flange conv
 
 ## Record and learn demonstrations
 
+**11 November lab recordings:** play Ala and Ecem's real recording against the supplied NAURU STEP sink:
+
+```sh
+uv run --locked scripts/play_lab.py 18-40-01 --cleaning-only
+```
+
+Space pauses, R restarts, left/right scrub. All 24 recordings and five classes of KMP/TP-KMP models are included. See [lab recordings](docs/lab-recordings.md) for classification, learned-path playback and measured limitations.
+
 ```sh
 uv run --locked scripts/record.py data/recordings/take-01
 uv run --locked scripts/replay.py data/recordings/take-01 --approach
@@ -49,7 +57,7 @@ Recording opens the white bathroom washbasin scene and a small recording panel. 
 
 Each take also saves optional SDK telemetry (joint torques, commanded positions, flange pose, temperature and controller status where available) in `telemetry.jsonl`. An unavailable optional channel is logged and disabled for that take; the tool path continues recording. Original recordings still load. The recorder is split into `Record.java` (workflow), `RecordingTelemetry.java` (readings) and `OptionalTelemetry.java` (missing/slow readings).
 
-The [short demonstration guide](docs/demonstrations.md) covers hardware use, controls, sink calibration, replay and KMP/TP-KMP. Five scripted simulator takes and their learned paths are included in `data/examples/sink`. Hardware recording/replay has not been tested in the lab.
+The [short demonstration guide](docs/demonstrations.md) covers hardware use, controls, sink calibration, replay and KMP/TP-KMP. Five scripted simulator takes and their learned paths are included in `data/examples/sink`. Our separate native hand-guiding recorder remains untested on hardware; Ala and Ecem's Task 9/10 lab workflow produced the November recordings.
 
 ## Where things belong
 

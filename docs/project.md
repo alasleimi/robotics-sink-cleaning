@@ -12,10 +12,10 @@ Locate the sink using markers, record demonstrations, learn a cleaning baseline,
 | Sunrise simulation adapter | E1, taught redundancy, force fixes and wire fixture implemented; full Windows/Intel Mac/Apple Silicon CI passed | Re-teach in the corrected flange convention; see `simulation/README.md` |
 | Robot/API exercises | Completed temporary solutions tested on Windows, including force-guided wire traversal; all templates restored byte-for-byte | Teach F0-F2/J0-J2 in 01, then work through the restored exercises; see `validation.md` |
 | AprilTag sink localisation | Unstarted | Detect a printed marker and define transforms |
-| Demonstration recording and replay | Sunrise hand-guiding recorder and path replay implemented; simulator integration tested | Check actual sponge TCP/load and guiding setup, then record a short lab take; see `demonstrations.md` |
-| KMP and TP-KMP baseline | PGLfD pipelines trained on five scripted simulator takes | Replace synthetic takes with human demonstrations and evaluate on new strokes |
+| Demonstration recording and replay | Ala/Ecem supplied 24 real Task 9/11 recordings from 11 November; Task 10 hardware replay reported. New simulator viewer preserves measured joints/timestamps | Review the [classified lab recordings](lab-recordings.md); separate native hand-guiding recorder remains hardware-untested |
+| KMP and TP-KMP baseline | Both trained with PGLfD for five motion classes from 14 real recordings; all ten final paths pass simulated IK | Review 3–6 cm mean held-out errors; collect more consistent takes and measure sink/TCP calibration |
 | PushWiper/adaptive wiping | Reading pending | Summarise their inputs, outputs, and feedback |
-| Sink reconstruction | Unstarted | Photograph sink and assess geometry capture |
+| Sink reconstruction | Supplied NAURU STEP imported; pose estimated from rim sweeps, not measured | Confirm placement and sponge contact offset in lab |
 
 Owners and dates have not been assigned. Keep ideas with their evidence, current conclusion, and next action here or in a linked short note.
 

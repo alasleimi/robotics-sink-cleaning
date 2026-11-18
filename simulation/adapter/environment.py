@@ -81,10 +81,10 @@ class SpongeTool(CourseTool):
 class CourseEnvironment(ManipulationEnv):
     """Real robosuite environment; env.step accepts seven absolute joint targets."""
     def __init__(self, *, scene="empty", **kwargs):
-        if scene not in ("empty", "wire", "sink"):
-            raise ValueError("Scene must be empty, wire or sink")
+        if scene not in ("empty", "wire", "sink", "nauru"):
+            raise ValueError("Scene must be empty, wire, sink or nauru")
         self.scene = scene
-        super().__init__(robots="IIWA", base_types="NullMount", gripper_types={"wire":"WireLoopTool","sink":"SpongeTool"}.get(scene,"CourseTool"),
+        super().__init__(robots="IIWA", base_types="NullMount", gripper_types={"wire":"WireLoopTool","sink":"SpongeTool","nauru":"SpongeTool"}.get(scene,"CourseTool"),
             controller_configs={"type": "BASIC", "body_parts": {"right": {
                 "type": "JOINT_POSITION", "input_type": "absolute", "kp": 150,
                 "damping_ratio": 1, "interpolation": None, "gripper": {"type": "GRIP"}}}},
@@ -108,6 +108,9 @@ class CourseEnvironment(ManipulationEnv):
         if self.scene == "sink":
             from sink import add_sink
             add_sink(arena)
+        elif self.scene == "nauru":
+            from nauru import add_nauru
+            add_nauru(arena)
         target = ET.SubElement(arena.worldbody, "body", name="TeachTarget", mocap="true", pos="0 0 1.5")
         ET.SubElement(target, "geom", name="TeachTarget_visual", type="sphere", size=".035",
                       contype="0", conaffinity="0", rgba=".1 .9 .3 .35", group="1")

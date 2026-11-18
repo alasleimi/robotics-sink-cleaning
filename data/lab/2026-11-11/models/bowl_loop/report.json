@@ -1,0 +1,96 @@
+{
+  "motion": "bowl_loop",
+  "training_recordings": [
+    "18-34-31",
+    "18-41-50"
+  ],
+  "training_count": 2,
+  "phase": "Smoothed TCP arc length; pauses/speed are not learned",
+  "output_manifold": "R3*SO3",
+  "kmp_chart": "Fixed training-mean orientation in sink coordinates avoids the SO3 180-degree log cut; not a per-test task frame",
+  "task_frames_in_sink": {
+    "start": [
+      0.06759520301388632,
+      0.10280920326576032,
+      0.09012084229394976,
+      -0.7541991267103917,
+      -0.6556441343397064,
+      0.028798304864020238,
+      0.02202507689380253
+    ],
+    "end": [
+      -0.011975601071084405,
+      0.10247878442387487,
+      0.08300171194394976,
+      -0.7541991267103917,
+      -0.6556441343397064,
+      0.028798304864020238,
+      0.02202507689380253
+    ]
+  },
+  "sink_pose": [
+    0.7121733947854116,
+    -0.04242785915644251,
+    -0.008582802093949765,
+    0.0,
+    0.0,
+    0.7050781960812954,
+    0.7091295632045997
+  ],
+  "duration_s": 7.187,
+  "task_frame_definition": "Origins at cleaning start/end positions; both axes fixed relative to sink by training reference orientation. Tool orientation is learned, not supplied from held-out endpoints.",
+  "evaluation": "Leave-one-recording-out; KMP gets sink frame, TP-KMP also gets held-out start/end positions. Different conditioning, not a fair algorithm ranking.",
+  "limitations": "Same estimated sink pose/session; no evidence of transfer to a different sink placement. Two-example classes have only one training take per fold; covariance is regularized, not well estimated.",
+  "folds": [
+    {
+      "held_out": "18-34-31",
+      "training": [
+        "18-41-50"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 47.24192171072807,
+          "position_max_mm": 67.15912980516538,
+          "orientation_rmse_deg": 13.979525265530878
+        },
+        "tpkmp": {
+          "position_rmse_mm": 40.976539631512864,
+          "position_max_mm": 60.467619210998244,
+          "orientation_rmse_deg": 13.979525265530878
+        }
+      }
+    },
+    {
+      "held_out": "18-41-50",
+      "training": [
+        "18-34-31"
+      ],
+      "metrics": {
+        "kmp": {
+          "position_rmse_mm": 47.24172734985686,
+          "position_max_mm": 67.15618784916704,
+          "orientation_rmse_deg": 13.979510261663396
+        },
+        "tpkmp": {
+          "position_rmse_mm": 40.97632319704967,
+          "position_max_mm": 60.42544183969143,
+          "orientation_rmse_deg": 13.979510261663396
+        }
+      }
+    }
+  ],
+  "mean_fold_metrics": {
+    "kmp": {
+      "position_rmse_mm": 47.24182453029246,
+      "position_max_mm": 67.15765882716622,
+      "orientation_rmse_deg": 13.979517763597137
+    },
+    "tpkmp": {
+      "position_rmse_mm": 40.976431414281265,
+      "position_max_mm": 60.44653052534484,
+      "orientation_rmse_deg": 13.979517763597137
+    }
+  },
+  "task_frame_translation_check_max_error_m": 3.804545602077247e-17,
+  "final_models": "Refit using ALL listed recordings; final paths are not held-out predictions"
+}

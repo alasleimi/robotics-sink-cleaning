@@ -1,0 +1,31 @@
+{
+  "session": "2026-11-11, Ala and Ecem",
+  "label_status": "Edge cleaning confirmed by Ala. Inner/outer bands, bowl loops and interval boundaries inferred from geometry; reviewable hypotheses.",
+  "early_setup_status": "Unknown: early exploratory recordings are retained separately, not declared corrupt.",
+  "recordings": [
+    {"id":"17-37-06", "motion":"stationary_test", "train":false, "reason":"Only millimetres of TCP displacement; no useful cleaning stroke."},
+    {"id":"17-41-44", "motion":"early_exploration", "train":false, "reason":"Irregular motion behind the inferred basin; setup/intent unconfirmed."},
+    {"id":"17-42-07", "motion":"short_joint_test", "train":false, "reason":"About 37 mm sideways at the starting height; no sink contact path."},
+    {"id":"17-47-51", "motion":"lowering_test", "train":false, "reason":"Lowering in steps, ending above the inferred rim; no cleaning stroke."},
+    {"id":"17-49-03", "motion":"early_large_loops", "train":false, "reason":"Large loops below the later inferred sink surface; different setup or unsuccessful attempt possible."},
+    {"id":"17-51-21", "motion":"early_back_and_forth", "train":false, "reason":"Two long strokes below the later sink position; setup/intent unconfirmed."},
+    {"id":"17-51-53", "motion":"early_large_loop", "train":false, "reason":"Large descending loop below the later sink position; setup/intent unconfirmed."},
+    {"id":"18-09-35", "motion":"partial_rim_sweep", "train":false, "reason":"Only one portion of the rim after approach; kept for inspection, not averaged with full sweeps."},
+    {"id":"18-12-30", "motion":"rim_inner_y_plus", "train":true, "reason":"Full reverse inner-band edge sweep, with pauses. Direction refers to robot-base Y."},
+    {"id":"18-13-32", "motion":"rim_inner_y_minus", "train":true, "reason":"Full inner-band edge sweep."},
+    {"id":"18-17-58", "motion":"wrist_rotation_test", "train":false, "reason":"A7 rotates to about 178.35 degrees, beyond simulator nominal 175; not a cleaning path. Raw observations retained without clipping."},
+    {"id":"18-31-47", "motion":"rim_outer_y_minus", "train":true, "reason":"Full outer-band edge sweep."},
+    {"id":"18-32-31", "motion":"rim_inner_y_plus", "train":true, "reason":"Full reverse inner-band edge sweep."},
+    {"id":"18-33-07", "motion":"rim_inner_y_minus", "train":true, "reason":"Full inner-band edge sweep."},
+    {"id":"18-33-41", "motion":"rim_outer_y_minus", "train":true, "reason":"Full outer-band edge sweep."},
+    {"id":"18-34-31", "motion":"bowl_loop", "train":true, "interval_s":[7.2,16.2], "reason":"Counterclockwise loop with inward finish inside bowl; omit approach and final lift."},
+    {"id":"18-37-33", "motion":"partial_back_edge", "train":false, "reason":"Short local motion at rear/side of inferred sink; incomplete or separate intent, needs review."},
+    {"id":"18-38-16", "motion":"rim_outer_y_plus", "train":true, "reason":"Full reverse outer-band edge sweep."},
+    {"id":"18-38-53", "motion":"rim_inner_y_minus", "train":true, "reason":"Full inner-band edge sweep; final return excluded by Y-extrema trim."},
+    {"id":"18-39-35", "motion":"rim_inner_y_plus", "train":true, "reason":"Full reverse inner-band edge sweep."},
+    {"id":"18-40-01", "motion":"rim_inner_y_minus", "train":true, "reason":"Full inner-band edge sweep."},
+    {"id":"18-40-38", "motion":"rim_outer_y_plus", "train":true, "reason":"Full reverse outer-band edge sweep."},
+    {"id":"18-41-07", "motion":"rim_outer_y_minus", "train":true, "reason":"Full outer-band edge sweep."},
+    {"id":"18-41-50", "motion":"bowl_loop", "train":true, "interval_s":[5.3,10.7], "reason":"Smaller counterclockwise bowl loop with inward finish; omit approach and stationary tail."}
+  ]
+}
